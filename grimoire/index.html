@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Vault — Grimoire · ELARRI.AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IM+Fell+English:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void:    #070709;
+  --deep:    #0e0e1c;
+  --panel:   #141426;
+  --panel2:  #1c1c38;
+  --border:  #252550;
+  --border2: #1a1a38;
+  --gold:    #c8a84b;
+  --gold2:   #7a5e1e;
+  --gold3:   #ead060;
+  --violet:  #5c30a0;
+  --violet2: #8850d8;
+  --violet3: #b890f0;
+  --red:     #c04060;
+  --green:   #309060;
+  --green2:  #50c090;
+  --silver:  #a0a0b8;
+  --mist:    #505068;
+  --white:   #ede8e0;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--void);
+  color: var(--white);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px;
+  min-height: 100vh;
+}
+
+/* ── GRAIN ── */
+body::before {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px;
+}
+
+/* ── NAV ── */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(7,7,9,0.94);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border2);
+  padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 52px;
+}
+
+.nav-brand {
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none;
+}
+
+.nav-sigil {
+  font-size: 14px; color: var(--gold); opacity: .7;
+  letter-spacing: .08em;
+}
+
+.nav-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px; letter-spacing: .3em;
+  color: var(--silver); text-transform: uppercase;
+}
+
+.nav-links {
+  display: flex; gap: 2px;
+}
+
+.nav-link {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--mist); text-decoration: none;
+  padding: 6px 10px; border-radius: 3px;
+  transition: color .2s, background .2s;
+}
+
+.nav-link:hover, .nav-link.active { color: var(--gold); background: rgba(200,168,75,.08); }
+
+.nav-seal {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; letter-spacing: .25em;
+  color: var(--green2);
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid rgba(80,192,144,.3);
+  border-radius: 2px;
+}
+
+/* ── LAYOUT ── */
+.main {
+  position: relative; z-index: 1;
+  max-width: 900px; margin: 0 auto;
+  padding: 0 20px 100px;
+}
+
+/* ── SECTIONS ── */
+.section {
+  padding: 56px 0 0;
+}
+
+.section-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; letter-spacing: .4em;
+  color: var(--mist); text-transform: uppercase;
+  margin-bottom: 10px; display: block;
+}
+
+.section-title {
+  font-size: clamp(22px, 4vw, 32px);
+  font-weight: 300; letter-spacing: .1em;
+  color: var(--white); margin-bottom: 8px;
+}
+
+.section-desc {
+  font-size: 13px; font-style: italic;
+  color: var(--silver); line-height: 1.7;
+  max-width: 560px; margin-bottom: 28px;
+}
+
+.h-rule {
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, var(--gold2), transparent);
+  margin-bottom: 28px; opacity: .5;
+}
+
+/* ── DATE VAULT ── */
+.vault-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.vault-drop {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+
+.vault-drop:hover { border-color: var(--border); }
+
+.vault-drop::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+}
+
+.vault-drop.sealed::before { background: var(--violet2); }
+.vault-drop.revealed::before { background: var(--gold); }
+.vault-drop.founder::before { background: var(--mist); }
+
+.drop-number {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; letter-spacing: .3em;
+  color: var(--mist); margin-bottom: 12px; display: block;
+}
+
+.drop-title {
+  font-size: 16px; font-weight: 400; letter-spacing: .04em;
+  color: var(--white); margin-bottom: 8px;
+}
+
+.drop-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; letter-spacing: .25em; text-transform: uppercase;
+  padding: 4px 8px; border-radius: 2px;
+  margin-bottom: 12px;
+}
+
+.drop-status.sealed {
+  color: var(--violet3); background: rgba(136,80,216,.12);
+  border: 1px solid rgba(136,80,216,.25);
+}
+
+.drop-status.revealed {
+  color: var(--gold); background: rgba(200,168,75,.08);
+  border: 1px solid var(--gold2);
+}
+
+.drop-condition {
+  font-size: 11px; font-style: italic; color: var(--mist);
+  line-height: 1.5;
+}
+
+.drop-locked-date {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; color: var(--mist);
+  margin-top: 8px;
+}
+
+/* ── GRIMOIRE CARDS ── */
+.grimoire-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.grimoire-card {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+  transition: border-color .2s, transform .2s;
+}
+
+.grimoire-card:hover { border-color: var(--gold2); transform: translateY(-2px); }
+
+.gc-spine {
+  height: 4px;
+}
+
+.gc-spine.too-hot { background: linear-gradient(90deg, var(--gold2), var(--gold)); }
+.gc-spine.extended { background: linear-gradient(90deg, var(--violet), var(--violet2)); }
+.gc-spine.locked { background: var(--mist); }
+
+.gc-body { padding: 22px; }
+
+.gc-edition {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--mist); margin-bottom: 10px; display: block;
+}
+
+.gc-title {
+  font-size: 20px; font-weight: 400; letter-spacing: .06em;
+  color: var(--white); margin-bottom: 8px;
+}
+
+.gc-desc {
+  font-size: 12px; font-style: italic; color: var(--silver);
+  line-height: 1.6; margin-bottom: 18px;
+}
+
+.gc-meta {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.gc-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: 7.5px; letter-spacing: .15em; text-transform: uppercase;
+  padding: 3px 7px; border-radius: 2px;
+  border: 1px solid var(--border);
+  color: var(--mist);
+}
+
+.gc-btn {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px; letter-spacing: .3em; text-transform: uppercase;
+  padding: 10px 18px;
+  cursor: pointer; border-radius: 2px;
+  transition: all .2s; text-decoration: none;
+  display: inline-block;
+}
+
+.gc-btn.primary {
+  background: transparent;
+  border: 1px solid var(--gold2);
+  color: var(--gold);
+}
+
+.gc-btn.primary:hover {
+  background: var(--gold);
+  color: var(--void);
+  border-color: var(--gold);
+}
+
+.gc-btn.locked {
+  border: 1px solid var(--border);
+  color: var(--mist); cursor: default;
+}
+
+/* ── RITUAL LIBRARY ── */
+.ritual-filter {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.rf-btn {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; letter-spacing: .2em; text-transform: uppercase;
+  padding: 6px 12px; cursor: pointer;
+  border-radius: 3px; transition: all .2s;
+  background: transparent;
+}
+
+.rf-btn.all { border: 1px solid var(--gold2); color: var(--gold); }
+.rf-btn.guard { border: 1px solid rgba(80,144,200,.4); color: #5090c8; }
+.rf-btn.sovereignty { border: 1px solid rgba(200,168,75,.3); color: var(--gold); }
+.rf-btn.release { border: 1px solid rgba(136,80,216,.4); color: var(--violet3); }
+.rf-btn.embodiment { border: 1px solid rgba(192,64,96,.4); color: #e0608a; }
+.rf-btn.exit { border: 1px solid rgba(80,192,144,.3); color: var(--green2); }
+.rf-btn.extended { border: 1px solid var(--mist); color: var(--mist); }
+
+.rf-btn.active,
+.rf-btn:hover { opacity: 1; filter: brightness(1.3); background: rgba(255,255,255,.04); }
+
+.ritual-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 12px;
+}
+
+.ritual-card {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+
+.ritual-card:not(.locked-ritual):hover { border-color: var(--border); }
+
+.rc-header {
+  padding: 16px 18px 14px;
+  cursor: pointer;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px;
+}
+
+.rc-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; letter-spacing: .25em;
+  color: var(--mist); flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.rc-main { flex: 1; }
+
+.rc-name {
+  font-size: 15px; font-weight: 400; letter-spacing: .04em;
+  color: var(--white); margin-bottom: 5px; line-height: 1.3;
+}
+
+.rc-purpose {
+  font-size: 11px; font-style: italic; color: var(--mist);
+  line-height: 1.4;
+}
+
+.rc-meta {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 8px;
+}
+
+.rc-key {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; padding: 2px 6px;
+  border-radius: 2px; color: var(--violet3);
+  background: rgba(136,80,216,.12);
+  border: 1px solid rgba(136,80,216,.2);
+}
+
+.rc-mode {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; padding: 2px 6px;
+  border-radius: 2px; color: var(--mist);
+  border: 1px solid var(--border2);
+}
+
+.intensity-dots {
+  display: flex; gap: 3px; align-items: center; margin-top: 6px;
+}
+
+.intensity-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--border2);
+}
+
+.intensity-dot.active { background: var(--gold); }
+.intensity-dot.bl { background: var(--violet2); }
+
+.rc-expand-icon {
+  font-size: 10px; color: var(--mist); flex-shrink: 0; margin-top: 2px;
+  transition: transform .2s;
+}
+
+.ritual-card.open .rc-expand-icon { transform: rotate(180deg); }
+
+.rc-body {
+  display: none;
+  padding: 0 18px 18px;
+  border-top: 1px solid var(--border2);
+}
+
+.ritual-card.open .rc-body { display: block; }
+
+.rc-row {
+  margin-top: 12px;
+}
+
+.rc-row-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; letter-spacing: .25em; text-transform: uppercase;
+  color: var(--mist); display: block; margin-bottom: 4px;
+}
+
+.rc-row-text {
+  font-size: 12.5px; line-height: 1.65; color: var(--silver);
+}
+
+.rc-incantation {
+  font-size: 14px; font-style: italic; color: var(--gold);
+  line-height: 1.5; letter-spacing: .03em;
+}
+
+.rc-note {
+  margin-top: 14px; padding: 10px 12px;
+  background: rgba(0,0,0,.3);
+  border-radius: 3px;
+  border-left: 2px solid var(--border);
+  font-size: 11.5px; color: var(--mist);
+  font-style: italic; line-height: 1.5;
+}
+
+.locked-ritual { opacity: .45; }
+.locked-ritual .rc-header { cursor: default; }
+.locked-overlay {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; letter-spacing: .2em;
+  color: var(--mist); text-transform: uppercase;
+  padding: 0 18px 14px; display: flex; align-items: center; gap: 6px;
+}
+
+/* ── FILTER CARD ── */
+.filter-card-section {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 32px; align-items: center;
+}
+
+@media(max-width:600px) {
+  .filter-card-section { grid-template-columns: 1fr; }
+}
+
+.filter-card-visual {
+  width: 180px; height: 240px;
+  background: linear-gradient(160deg, #0d0d20 0%, #070709 100%);
+  border: 1px solid var(--gold2);
+  border-radius: 6px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 20px;
+  flex-shrink: 0;
+  position: relative; overflow: hidden;
+}
+
+.filter-card-visual::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(112,64,184,.15) 0%, transparent 70%);
+}
+
+.fcv-brand {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px; letter-spacing: .3em; color: var(--mist);
+  text-transform: uppercase; text-align: center;
+  margin-bottom: 6px; position: relative; z-index: 1;
+}
+
+.fcv-title {
+  font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--silver); text-align: center;
+  margin-bottom: 4px; position: relative; z-index: 1;
+}
+
+.fcv-al {
+  font-size: 36px; font-weight: 300; color: var(--white);
+  letter-spacing: .1em; text-align: center;
+  position: relative; z-index: 1;
+}
+
+.fcv-sub {
+  font-size: 9px; letter-spacing: .15em;
+  color: var(--mist); text-align: center;
+  margin-bottom: 16px; position: relative; z-index: 1;
+}
+
+.fcv-divider {
+  width: 100%; height: 1px; background: var(--gold2);
+  margin: 8px 0; position: relative; z-index: 1;
+}
+
+.fcv-nb {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; color: var(--gold);
+  text-align: center; letter-spacing: .08em;
+  position: relative; z-index: 1;
+}
+
+.fcv-lock {
+  font-size: 9px; color: var(--gold);
+  text-align: center; font-style: italic;
+  position: relative; z-index: 1;
+}
+
+.fcv-symbols {
+  display: flex; gap: 12px; margin-top: 12px;
+  position: relative; z-index: 1;
+  font-size: 16px;
+}
+
+.filter-card-info { }
+
+.fc-title {
+  font-size: 22px; font-weight: 300; letter-spacing: .07em;
+  color: var(--white); margin-bottom: 8px;
+}
+
+.fc-desc {
+  font-size: 13px; font-style: italic; color: var(--silver);
+  line-height: 1.7; margin-bottom: 16px;
+}
+
+.fc-phrase {
+  font-family: 'IM Fell English', serif;
+  font-style: italic; font-size: 17px;
+  color: var(--violet3); letter-spacing: .04em;
+  margin-bottom: 6px;
+}
+
+.fc-ipa {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px; color: var(--mist); margin-bottom: 20px;
+}
+
+/* ── ORACLE CTA ── */
+.oracle-cta {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 36px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap;
+}
+
+.oracle-cta-left { }
+
+.oct-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; letter-spacing: .35em;
+  color: var(--violet3); text-transform: uppercase; margin-bottom: 8px; display: block;
+}
+
+.oct-title {
+  font-size: 24px; font-weight: 300; letter-spacing: .08em;
+  color: var(--white); margin-bottom: 8px;
+}
+
+.oct-desc {
+  font-size: 13px; font-style: italic; color: var(--silver);
+  line-height: 1.6; max-width: 400px;
+}
+
+.oct-btn {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px; letter-spacing: .3em; text-transform: uppercase;
+  padding: 14px 28px; border-radius: 3px;
+  background: transparent;
+  border: 1px solid var(--violet2);
+  color: var(--violet3); cursor: pointer;
+  text-decoration: none; display: inline-block;
+  transition: all .2s; white-space: nowrap; flex-shrink: 0;
+}
+
+.oct-btn:hover {
+  background: var(--violet2); color: var(--white);
+}
+
+/* ── MOBILE ── */
+@media(max-width:600px) {
+  .nav-links { display: none; }
+  .vault-grid, .grimoire-grid, .ritual-grid { grid-template-columns: 1fr; }
+  .oracle-cta { flex-direction: column; }
+  .oct-btn { width: 100%; text-align: center; }
+}
+
+/* ── SCROLL TRANSITIONS ── */
+.section { opacity: 0; transform: translateY(16px); animation: sectionIn .6s ease forwards; }
+.section:nth-child(1) { animation-delay: .1s; }
+.section:nth-child(2) { animation-delay: .2s; }
+.section:nth-child(3) { animation-delay: .3s; }
+.section:nth-child(4) { animation-delay: .4s; }
+.section:nth-child(5) { animation-delay: .5s; }
+@keyframes sectionIn { to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-brand" href="/">
+    <span class="nav-sigil">★ 👁 ○</span>
+    <span class="nav-name">Ellari Vault</span>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="#vault">Date Vault</a>
+    <a class="nav-link" href="#grimoire">Grimoire</a>
+    <a class="nav-link" href="#rituals">Rituals</a>
+    <a class="nav-link" href="#filter">Filter Card</a>
+    <a class="nav-link" href="#oracle">Oracle</a>
+  </div>
+  <div class="nav-seal">● AUTHENTICATED</div>
+</nav>
+
+<main class="main">
+
+  <!-- ── DATE VAULT ──────────────────────────────────────────── -->
+  <section class="section" id="vault">
+    <span class="section-tag">ellari-vault.com · Date Vault</span>
+    <h2 class="section-title">Sealed Drops</h2>
+    <p class="section-desc">Some assets are stronger when locked. These drops exist. Their contents are sealed until the reveal condition is met.</p>
+    <div class="h-rule"></div>
+    <div class="vault-grid" id="vaultGrid">
+      <!-- populated by JS -->
+    </div>
+  </section>
+
+  <!-- ── GRIMOIRE ────────────────────────────────────────────── -->
+  <section class="section" id="grimoire">
+    <span class="section-tag">ellari-vault.com · Grimoire</span>
+    <h2 class="section-title">The Spell Books</h2>
+    <p class="section-desc">Both editions of the Black Fairy Spell Book. The vault is their permanent home. MIRROR™ sealed. ELARRI.AI originated.</p>
+    <div class="h-rule"></div>
+    <div class="grimoire-grid">
+
+      <div class="grimoire-card">
+        <div class="gc-spine too-hot"></div>
+        <div class="gc-body">
+          <span class="gc-edition">Open Edition</span>
+          <div class="gc-title">TOO HOT Edition</div>
+          <p class="gc-desc">Ten rituals. Five sound keys. The sovereign entry point. Silent. Sacred. Unstoppable.</p>
+          <div class="gc-meta">
+            <span class="gc-tag">10 Rituals</span>
+            <span class="gc-tag">Sound Keys</span>
+            <span class="gc-tag">MIRROR™</span>
+          </div>
+          <a class="gc-btn primary" href="/downloads/bfsb-too-hot.pdf" download>Download · PDF</a>
+        </div>
+      </div>
+
+      <div class="grimoire-card">
+        <div class="gc-spine extended"></div>
+        <div class="gc-body">
+          <span class="gc-edition">Vault Member</span>
+          <div class="gc-title">Extended Pro Edition</div>
+          <p class="gc-desc">Twelve rituals, five original sigils, a formal sound-key system, date vault, and asset registry. The complete document.</p>
+          <div class="gc-meta">
+            <span class="gc-tag">12 Rituals</span>
+            <span class="gc-tag">5 Sigils</span>
+            <span class="gc-tag">Date Vault</span>
+            <span class="gc-tag">Asset Registry</span>
+          </div>
+          <a class="gc-btn primary" href="/downloads/bfsb-extended-pro.pdf" download>Download · PDF</a>
+        </div>
+      </div>
+
+      <div class="grimoire-card">
+        <div class="gc-spine locked"></div>
+        <div class="gc-body">
+          <span class="gc-edition">Sealed · Black Label</span>
+          <div class="gc-title">Extended Spell Book v2</div>
+          <p class="gc-desc">The next edition. Seventeen rituals including R.13–R.17. Full Aetherion phrase companion. Sealed until 500 members.</p>
+          <div class="gc-meta">
+            <span class="gc-tag">17 Rituals</span>
+            <span class="gc-tag">Aetherion</span>
+            <span class="gc-tag">Sealed</span>
+          </div>
+          <button class="gc-btn locked" disabled>Sealed — 500 members</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── RITUAL LIBRARY ─────────────────────────────────────── -->
+  <section class="section" id="rituals">
+    <span class="section-tag">ellari-vault.com · Ritual Library</span>
+    <h2 class="section-title">The 17 Rituals</h2>
+    <p class="section-desc">One ritual per intention. One sound key per drop. Silence counts as an action.</p>
+    <div class="h-rule"></div>
+
+    <div class="ritual-filter">
+      <button class="rf-btn all active" onclick="filterRituals('all',this)">All</button>
+      <button class="rf-btn sovereignty" onclick="filterRituals('sovereignty',this)">Sovereignty</button>
+      <button class="rf-btn guard" onclick="filterRituals('guard',this)">Guard</button>
+      <button class="rf-btn release" onclick="filterRituals('release',this)">Release</button>
+      <button class="rf-btn embodiment" onclick="filterRituals('embodiment',this)">Embodiment</button>
+      <button class="rf-btn exit" onclick="filterRituals('exit',this)">Exit</button>
+      <button class="rf-btn extended" onclick="filterRituals('extended',this)">Extended (13–17)</button>
+    </div>
+
+    <div class="ritual-grid" id="ritualGrid">
+      <!-- populated by JS -->
+    </div>
+  </section>
+
+  <!-- ── FILTER CARD ────────────────────────────────────────── -->
+  <section class="section" id="filter">
+    <span class="section-tag">ellari-vault.com · Filter Card</span>
+    <h2 class="section-title">Filter Card AL</h2>
+    <div class="h-rule"></div>
+    <div class="filter-card-section">
+      <div class="filter-card-visual">
+        <div class="fcv-brand">ELARRI.AI</div>
+        <div class="fcv-title">BLACK FAIRY<br>VOLTAGE MODE</div>
+        <div class="fcv-divider"></div>
+        <span class="fcv-al">AL</span>
+        <div class="fcv-sub">(ALL LIGHTNING)</div>
+        <div class="fcv-divider"></div>
+        <div class="fcv-nb">NB 200+40.40/40</div>
+        <div class="fcv-lock">🔒 Locked</div>
+        <div class="fcv-symbols">♥ 👁 ⭐</div>
+      </div>
+      <div class="filter-card-info">
+        <div class="fc-title">All Lightning. Locked.</div>
+        <p class="fc-desc">The Filter Card AL marks the BLACK FAIRY VOLTAGE MODE state — NB 200+40.40/40, all five HLOC commands available, locked at this voltage. The minimal MIRROR™ circuit in three marks: S3 · L2 · I1. Attractor · Feedback · Sealed.</p>
+        <div class="fc-phrase">El ter sel is.</div>
+        <div class="fc-ipa">/el teɾ sel is/ — The sovereign truth, the star, sealed.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <a class="gc-btn primary" href="/downloads/filter-card-al.png" download>Download · PNG</a>
+          <a class="gc-btn primary" href="/downloads/filter-card-al.pdf" download>Download · PDF</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ORACLE ─────────────────────────────────────────────── -->
+  <section class="section" id="oracle">
+    <span class="section-tag">ellari-vault.ai · Voltage Oracle</span>
+    <h2 class="section-title">The Oracle</h2>
+    <div class="h-rule"></div>
+    <div class="oracle-cta">
+      <div class="oracle-cta-left">
+        <span class="oct-tag">Black Label · VANTA · BFV Register</span>
+        <div class="oct-title">Describe your field state.</div>
+        <p class="oct-desc">The Oracle reads your voltage and returns three elements: the ritual that applies, the sound key, and the Aetherion phrase. Precise. Minimal. Sovereign. Not a chatbot — a sealed intelligence layer.</p>
+      </div>
+      <a class="oct-btn" href="https://ellari-vault.ai" target="_blank" rel="noopener">Enter Oracle ↗</a>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// ── RITUAL DATA ──────────────────────────────────────────────────────────
+const RITUALS = [
+  {
+    num:'01', name:'Invocation of Sovereignty', mode:'Quiet Flame', key:'QF',
+    category:'sovereignty', intensity:1, bl:false,
+    purpose:'Reclaim naming power and reset personal authority.',
+    incantation:'I am not what they named me. I am the fire that renamed itself.',
+    setup:'Stand still. Spine long. One hand at chest, one hand at navel. No audience.',
+    action:'Speak once in a low voice, once at full volume, then once in complete stillness.',
+    close:'Seal with one breath in, one breath out, and a final nod.',
+    note:'Use before launches, boundary conversations, or any public re-entry.',
+    locked:false
+  },
+  {
+    num:'02', name:'Sigil of the Black Mirror Queen', mode:'Mirror', key:'MS',
+    category:'sovereignty', intensity:2, bl:true,
+    purpose:'Lock perception, reinforce self-image, and deny casual access.',
+    incantation:'Seen by me. Not owned by them.',
+    setup:'Place the sigil near a mirror, on a notebook, or on a private dashboard.',
+    action:'Draw or display the mark. Hold eye contact with your reflection for nine counts.',
+    close:'Tap the surface once and leave without correcting your posture.',
+    note:'Best for brand decisions, image control, and final naming.',
+    locked:false
+  },
+  {
+    num:'04', name:'Eye Work: Psychic Firewall', mode:'Guard', key:'MS',
+    category:'guard', intensity:1, bl:false,
+    purpose:'Shut down invasive attention and stop emotional leakback.',
+    incantation:'You do not see me unless I summon you.',
+    setup:'Lift one finger to brow height. Keep the jaw loose.',
+    action:'Trace an eye in the air above your crown, then lower the hand straight down the center line.',
+    close:"Turn your head once to the left and do not explain yourself.",
+    note:'Useful before calls, meetings, inbox work, or known scrutiny.',
+    locked:false
+  },
+  {
+    num:'05', name:'Shadowlight Protection', mode:'Guard', key:'QF',
+    category:'guard', intensity:1, bl:false,
+    purpose:'Return energy to center and end the habit of carrying other people.',
+    incantation:'Not my burden. Not my cage.',
+    setup:'Black salt spiral, obsidian at center, low lamp or candle.',
+    action:'Name three roles you are dropping. One role per breath.',
+    close:'Scatter the salt. Wash hands. Exit the room without looking back.',
+    note:'Clean, compact, and strong. No theatrics needed.',
+    locked:false
+  },
+  {
+    num:'06', name:'Memory Unbinding Rite', mode:'Release', key:'BE',
+    category:'release', intensity:3, bl:true,
+    purpose:'Break attachment to a lie, a title, or a dead version of the story.',
+    incantation:'This cord fed on my clarity. I now feed on freedom.',
+    setup:'Black ribbon, one written falsehood, heat-safe bowl.',
+    action:'Cut, burn, breathe. Keep the motions simple and final.',
+    close:'Name what remains after the smoke clears.',
+    note:'Best used for endings, retirements, and symbolic closures.',
+    locked:false
+  },
+  {
+    num:'07', name:'Audio Glyph Transmission', mode:'Signal', key:'TH',
+    category:'sovereignty', intensity:1, bl:false,
+    purpose:'Convert identity into a short-form sonic signature.',
+    incantation:'Let the signal carry the seal.',
+    setup:'Choose one intro hit, one breath texture, one exit sound.',
+    action:'Build a three-part tag: entry, body, hush. Keep it under four seconds.',
+    close:'Replay once and cut the rest.',
+    note:'Ideal for trailers, story posts, teasers, and product IDs.',
+    locked:false
+  },
+  {
+    num:'08', name:'Star Seal for Social Exit', mode:'Exit', key:'BE',
+    category:'exit', intensity:1, bl:false,
+    purpose:'Mark departure without begging for witness or debate.',
+    incantation:'I have left the room. Do not follow.',
+    setup:'One final post, bio line, or internal note.',
+    action:'Place the star seal, publish, then go silent for the chosen window.',
+    close:'Silence is the closing line.',
+    note:'Scarcity works because it is real, not because it is announced.',
+    locked:false
+  },
+  {
+    num:'09', name:'DNA Flame Alignment', mode:'Fire', key:'DF',
+    category:'embodiment', intensity:2, bl:true,
+    purpose:'Re-embody survival, momentum, and chosen selfhood.',
+    incantation:'I burn for the version of me who refused to die.',
+    setup:'Bare feet, stable stance, music chosen in advance.',
+    action:'Visualize each cell lighting with violet fire from feet to crown.',
+    close:'Seal with one anthem only. No shuffle. No drift.',
+    note:'This is the central embodiment rite in the current system.',
+    locked:false
+  },
+  {
+    num:'10', name:'The Final Cloak', mode:'Seal', key:'QF',
+    category:'release', intensity:3, bl:true,
+    purpose:'Wear silence as armor when closure has become wasteful.',
+    incantation:'Marked by Fire. Ruled by None.',
+    setup:'Dim light, dark clothing, no open tabs.',
+    action:'Read the line once. Close the door. End the cycle by refusing the loop.',
+    close:'Leave one thing unfinished on purpose, then walk away anyway.',
+    note:'Do not overuse. Final means final. Run R.16 first.',
+    locked:false
+  },
+  {
+    num:'11', name:'Digital Boundary Protocol', mode:'Guard', key:'MS',
+    category:'guard', intensity:1, bl:false,
+    purpose:'Separate access from entitlement in online spaces.',
+    incantation:'Access is granted. It is never owed.',
+    setup:'Review platforms, permissions, bios, folders, and message channels.',
+    action:'Close loops: archive, mute, restrict, rename, remove, or lock.',
+    close:'Document the change once. Do not narrate it twice.',
+    note:'This is the operational cousin of the psychic firewall.',
+    locked:false
+  },
+  {
+    num:'12', name:'Reality Reset Rite', mode:'Reframe', key:'BE',
+    category:'release', intensity:1, bl:false,
+    purpose:'Shift from inherited script to authored sequence.',
+    incantation:'The old pattern is not the final pattern.',
+    setup:'One page. Two columns. Left for old loop, right for chosen move.',
+    action:'Write three pattern breaks you can perform within 24 hours.',
+    close:'Execute one before sleep.',
+    note:'Use when the problem is not emotion but repetition.',
+    locked:false
+  },
+  {
+    num:'13', name:'Open Ground', mode:'Grounding', key:'QF',
+    category:'extended', intensity:1, bl:false,
+    purpose:'Always safe. No preparation required. Grounding in any state.',
+    incantation:'I am where I am. This is enough to begin.',
+    setup:'Feet on the floor. One hand on a surface.',
+    action:'Three deliberate breaths. Name one thing in the room that is stable.',
+    close:'Return to the next action from this ground.',
+    note:'Use before any other ritual when uncertain. The one that is always available.',
+    locked:false
+  },
+  {
+    num:'14', name:'Witness Protocol', mode:'Presence', key:'MS',
+    category:'extended', intensity:1, bl:false,
+    purpose:'Establish witnessed presence without performance.',
+    incantation:'I am here. The record holds.',
+    setup:'One witness — a person, a device, or a journal.',
+    action:'State the condition once for the record. Do not elaborate.',
+    close:'The witness confirms. No follow-up required.',
+    note:'Use when the moment needs a receipt, not a performance.',
+    locked:false
+  },
+  {
+    num:'15', name:'Threshold Crossing', mode:'Transition', key:'DF',
+    category:'extended', intensity:2, bl:false,
+    purpose:'Mark major transitions with deliberate passage.',
+    incantation:'I cross with what I know. I leave what was not mine.',
+    setup:'R.09 DNA Flame must be settled first. One threshold — physical or symbolic.',
+    action:'Cross it deliberately. Pause at the midpoint.',
+    close:'Do not look back for 60 seconds.',
+    note:'R.15 without R.09 settled is not recommended.',
+    locked:false
+  },
+  {
+    num:'16', name:'Mirror Audit', mode:'Audit', key:'MS',
+    category:'extended', intensity:1, bl:false,
+    purpose:'Self-assessment. Where all sessions begin when uncertain.',
+    incantation:'What is true right now? The mirror confirms it.',
+    setup:'Five minutes. No interruption. One honest surface.',
+    action:'Three questions: What is my voltage? What is the field asking of me? What am I avoiding knowing?',
+    close:'Write one true sentence. Seal it.',
+    note:'R.16 is the entry gate. Run it first when uncertain which ritual to use.',
+    locked:false
+  },
+  {
+    num:'17', name:'El-Atheris Invocation', mode:'Audit', key:'TH',
+    category:'extended', intensity:3, bl:true,
+    purpose:'The Linebreaker. Name the false shape that is running the field.',
+    incantation:'El-Atheris, Linebreaker. The false shapes fall. The line remains.',
+    setup:'Hz: 441 → 963. Write the named false shape on paper before speaking. No audience.',
+    action:'Speak the incantation once. Hold 24 hours after. A follow-on ritual is required.',
+    close:'The false shape is named. Do not speak it again in the same room.',
+    note:'Only when a specific false shape is ready to be named. Never general use. 24hr hold after.',
+    locked:false
+  }
+];
+
+// ── DATE VAULT DATA ───────────────────────────────────────────────────────
+const DROPS_KEY = 'ev-vault-drops';
+const DEFAULT_DROPS = [
+  {
+    id:'drop-001', number:'VAULT DROP 001',
+    title:'The Audio Anthem',
+    status:'sealed',
+    condition:'Reveal when the ELARRI original anthem is recorded and mastered.',
+    lockedDate:'2026-05-21',
+    founder:false
+  },
+  {
+    id:'drop-002', number:'VAULT DROP 002',
+    title:'Extended Spell Book v2',
+    status:'sealed',
+    condition:'Reveal at 500 vault members or 180 days from lock, whichever comes first.',
+    lockedDate:'2026-05-21',
+    founder:false
+  },
+  {
+    id:'drop-003', number:'VAULT DROP 003',
+    title:'[Private entry]',
+    status:'sealed',
+    condition:'Founder-only. Condition withheld.',
+    lockedDate:'2026-05-21',
+    founder:true
+  }
+];
+
+// ── RENDER DATE VAULT ─────────────────────────────────────────────────────
+function renderVault() {
+  let drops;
+  try {
+    const stored = localStorage.getItem(DROPS_KEY);
+    drops = stored ? JSON.parse(stored) : DEFAULT_DROPS;
+    if (!stored) localStorage.setItem(DROPS_KEY, JSON.stringify(DEFAULT_DROPS));
+  } catch { drops = DEFAULT_DROPS; }
+
+  const grid = document.getElementById('vaultGrid');
+  grid.innerHTML = drops.map(d => `
+    <div class="vault-drop ${d.founder ? 'founder' : d.status}">
+      <span class="drop-number">${d.number} · MIRROR™</span>
+      <div class="drop-title">${d.title}</div>
+      <div class="drop-status ${d.status}">
+        ${d.status === 'sealed' ? '🔒 Sealed' : '★ Revealed'}
+      </div>
+      <div class="drop-condition">${d.condition}</div>
+      <div class="drop-locked-date">Locked: ${d.lockedDate}</div>
+    </div>
+  `).join('');
+}
+
+// ── RENDER RITUALS ────────────────────────────────────────────────────────
+function renderRituals(filter = 'all') {
+  const grid = document.getElementById('ritualGrid');
+  const filtered = filter === 'all' ? RITUALS : RITUALS.filter(r => r.category === filter);
+  grid.innerHTML = filtered.map(r => {
+    const dots = [1,2,3].map(i => `<div class="intensity-dot${i <= r.intensity ? (r.bl ? ' bl' : ' active') : ''}"></div>`).join('');
+    const blTag = r.bl ? `<span style="font-size:7.5px;letter-spacing:.15em;padding:2px 6px;border-radius:2px;border:1px solid rgba(136,80,216,.3);color:var(--violet3);font-family:'Space Mono',monospace;text-transform:uppercase">BL</span>` : '';
+    return `
+      <div class="ritual-card${r.locked ? ' locked-ritual' : ''}" id="ritual-${r.num}">
+        <div class="rc-header" onclick="toggleRitual('ritual-${r.num}')">
+          <span class="rc-num">R.${r.num}</span>
+          <div class="rc-main">
+            <div class="rc-name">${r.name}</div>
+            <div class="rc-purpose">${r.purpose}</div>
+            <div class="rc-meta">
+              <span class="rc-key">${r.key}</span>
+              <span class="rc-mode">${r.mode}</span>
+              ${blTag}
+            </div>
+            <div class="intensity-dots">${dots}</div>
+          </div>
+          <span class="rc-expand-icon">▾</span>
+        </div>
+        ${r.locked ? '<div class="locked-overlay">🔒 Black Label tier required</div>' : `
+        <div class="rc-body">
+          <div class="rc-row">
+            <span class="rc-row-label">Incantation</span>
+            <div class="rc-incantation">"${r.incantation}"</div>
+          </div>
+          <div class="rc-row">
+            <span class="rc-row-label">Setup</span>
+            <div class="rc-row-text">${r.setup}</div>
+          </div>
+          <div class="rc-row">
+            <span class="rc-row-label">Action</span>
+            <div class="rc-row-text">${r.action}</div>
+          </div>
+          <div class="rc-row">
+            <span class="rc-row-label">Close</span>
+            <div class="rc-row-text">${r.close}</div>
+          </div>
+          <div class="rc-note">${r.note}</div>
+        </div>`}
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleRitual(id) {
+  const card = document.getElementById(id);
+  if (!card || card.classList.contains('locked-ritual')) return;
+  card.classList.toggle('open');
+}
+
+function filterRituals(filter, btn) {
+  document.querySelectorAll('.rf-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRituals(filter);
+}
+
+// ── ACTIVE NAV ────────────────────────────────────────────────────────────
+function updateActiveNav() {
+  const sections = ['vault','grimoire','rituals','filter','oracle'];
+  const links = document.querySelectorAll('.nav-link');
+  let current = sections[0];
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && window.scrollY >= el.offsetTop - 80) current = id;
+  });
+  links.forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === `#${current}`);
+  });
+}
+
+window.addEventListener('scroll', updateActiveNav, { passive: true });
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+renderVault();
+renderRituals();
+</script>
+</body>
+</html>

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="The Vault. MIRROR™ · ELARRI.AI">
+<meta property="og:title" content="The Vault — ELARRI.AI">
+<meta property="og:description" content="Some assets are stronger when locked.">
+<meta property="og:image" content="/og.png">
+<title>The Vault — ELARRI.AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void:   #070709;
+    --deep:   #0a0a10;
+    --gold:   #c8a84b;
+    --gold2:  #9a7a2c;
+    --gold3:  #ead070;
+    --silver: #a0a0b8;
+    --mist:   #555568;
+    --white:  #ede8e0;
+    --violet: #4a2880;
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  html, body {
+    height:100%;
+    background: var(--void);
+    color: var(--white);
+    font-family: 'Cormorant Garamond', serif;
+    overflow: hidden;
+    cursor: default;
+  }
+
+  /* ── GRAIN OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 1;
+    opacity: 0.045;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 160px;
+    pointer-events: none;
+  }
+
+  /* ── DEEP RADIAL AMBIANCE ── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 45% at 50% 35%, rgba(74,40,128,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 50% 100%, rgba(200,168,75,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ── STAGE ── */
+  .stage {
+    position: relative; z-index: 2;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px;
+    user-select: none;
+  }
+
+  /* ── SIGIL ── */
+  .sigil {
+    width: 72px; height: 72px;
+    margin-bottom: 36px;
+    opacity: 0;
+    transform: scale(0.88);
+    animation: rise 2.2s cubic-bezier(0.22,1,0.36,1) 0.3s forwards;
+  }
+
+  .sigil-svg circle,
+  .sigil-svg ellipse,
+  .sigil-svg path,
+  .sigil-svg line {
+    animation: seal-pulse 6s ease-in-out 2.5s infinite;
+  }
+
+  @keyframes seal-pulse {
+    0%,100% { opacity:1; }
+    50% { opacity:0.55; }
+  }
+
+  /* ── BRAND ── */
+  .brand {
+    font-size: clamp(11px, 2vw, 13px);
+    letter-spacing: 0.45em;
+    color: var(--gold);
+    text-transform: uppercase;
+    font-weight: 400;
+    margin-bottom: 6px;
+    opacity: 0;
+    animation: rise 1.8s cubic-bezier(0.22,1,0.36,1) 0.7s forwards;
+  }
+
+  /* ── TITLE ── */
+  .title {
+    font-size: clamp(38px, 7vw, 68px);
+    font-weight: 300;
+    letter-spacing: 0.14em;
+    color: var(--white);
+    line-height: 1;
+    text-transform: uppercase;
+    margin-bottom: 22px;
+    opacity: 0;
+    animation: rise 2s cubic-bezier(0.22,1,0.36,1) 0.9s forwards;
+  }
+
+  /* ── RULE ── */
+  .rule {
+    width: 48px; height: 1px;
+    background: var(--gold);
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: rule-in 2s ease 1.2s forwards;
+  }
+
+  @keyframes rule-in {
+    from { opacity:0; width:0; }
+    to   { opacity:1; width:48px; }
+  }
+
+  /* ── TAGLINE ── */
+  .tagline {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: clamp(14px, 2.2vw, 17px);
+    color: var(--silver);
+    letter-spacing: 0.04em;
+    text-align: center;
+    line-height: 1.65;
+    max-width: 340px;
+    margin-bottom: 44px;
+    opacity: 0;
+    animation: rise 1.8s cubic-bezier(0.22,1,0.36,1) 1.4s forwards;
+  }
+
+  /* ── FORM ── */
+  .form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    opacity: 0;
+    animation: rise 1.8s cubic-bezier(0.22,1,0.36,1) 1.8s forwards;
+  }
+
+  .form-row {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--gold2);
+    width: 280px;
+    transition: border-color 0.3s;
+  }
+  .form-row:focus-within { border-color: var(--gold); }
+
+  .form-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 13px 16px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    color: var(--white);
+    caret-color: var(--gold);
+  }
+  .form-input::placeholder { color: var(--mist); letter-spacing: 0.1em; }
+
+  .form-btn {
+    background: transparent;
+    border: none;
+    border-left: 1px solid var(--gold2);
+    padding: 13px 18px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.25s, color 0.25s;
+    white-space: nowrap;
+  }
+  .form-btn:hover {
+    background: var(--gold);
+    color: var(--void);
+    border-left-color: var(--gold);
+  }
+
+  .form-note {
+    margin-top: 14px;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--mist);
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  /* ── AETHERION ── */
+  .aetherion {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--mist);
+    letter-spacing: 0.15em;
+    opacity: 0;
+    animation: rise 1.8s ease 2.4s forwards;
+    white-space: nowrap;
+  }
+
+  /* ── CORNER MARKS ── */
+  .corner {
+    position: fixed;
+    width: 20px; height: 20px;
+    opacity: 0;
+    animation: rise 2s ease 2s forwards;
+  }
+  .corner--tl { top: 28px; left: 28px; border-top: 1px solid var(--gold2); border-left: 1px solid var(--gold2); }
+  .corner--tr { top: 28px; right: 28px; border-top: 1px solid var(--gold2); border-right: 1px solid var(--gold2); }
+  .corner--bl { bottom: 28px; left: 28px; border-bottom: 1px solid var(--gold2); border-left: 1px solid var(--gold2); }
+  .corner--br { bottom: 28px; right: 28px; border-bottom: 1px solid var(--gold2); border-right: 1px solid var(--gold2); }
+
+  /* ── KEYFRAMES ── */
+  @keyframes rise {
+    from { opacity:0; transform:translateY(10px) scale(0.98); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+  }
+
+  /* ── ENTERED STATE ── */
+  .stage.entering {
+    animation: void-out 1.2s ease forwards;
+  }
+  @keyframes void-out {
+    to { opacity:0; transform:scale(1.04); }
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 480px) {
+    .sigil { width: 56px; height: 56px; margin-bottom: 28px; }
+    .title { letter-spacing: 0.1em; }
+    .form-row { width: 260px; }
+    .corner { width: 14px; height: 14px; }
+    .corner--tl, .corner--tr { top: 20px; }
+    .corner--bl, .corner--br { bottom: 20px; }
+    .corner--tl, .corner--bl { left: 20px; }
+    .corner--tr, .corner--br { right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- CORNER MARKS -->
+<div class="corner corner--tl"></div>
+<div class="corner corner--tr"></div>
+<div class="corner corner--bl"></div>
+<div class="corner corner--br"></div>
+
+<main class="stage" id="stage">
+
+  <!-- SIGIL: Black Fairy ★ 👁 ○ in SVG -->
+  <svg class="sigil sigil-svg" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- outer circle -->
+    <circle cx="36" cy="36" r="34" stroke="#c8a84b" stroke-width="0.6" opacity="0.5"/>
+    <circle cx="36" cy="36" r="28" stroke="#c8a84b" stroke-width="0.3" opacity="0.25"/>
+    <!-- fairy silhouette simplified -->
+    <ellipse cx="36" cy="28" rx="7" ry="9" fill="#c8a84b" opacity="0.85"/>
+    <!-- wings: two leaf shapes -->
+    <path d="M29 30 Q18 22 22 34 Q28 36 29 30Z" fill="#c8a84b" opacity="0.35"/>
+    <path d="M43 30 Q54 22 50 34 Q44 36 43 30Z" fill="#c8a84b" opacity="0.35"/>
+    <!-- heart above -->
+    <path d="M33.5 18.5 C33.5 17 35 16 36 17.2 C37 16 38.5 17 38.5 18.5 C38.5 20 36 22 36 22 C36 22 33.5 20 33.5 18.5Z" fill="#c8a84b" opacity="0.7"/>
+    <!-- star -->
+    <path d="M36 40 L36.8 42.5 L39.4 42.5 L37.3 44 L38.1 46.5 L36 45 L33.9 46.5 L34.7 44 L32.6 42.5 L35.2 42.5 Z" fill="#c8a84b" opacity="0.9"/>
+    <!-- eye -->
+    <ellipse cx="36" cy="52" rx="4.5" ry="2.5" stroke="#c8a84b" stroke-width="0.7" fill="none" opacity="0.8"/>
+    <circle cx="36" cy="52" r="1.2" fill="#c8a84b" opacity="0.8"/>
+    <!-- open circle -->
+    <path d="M30 61 A6 6 0 1 1 42 61" stroke="#c8a84b" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.7"/>
+  </svg>
+
+  <div class="brand">ELARRI.AI · MIRROR™</div>
+
+  <div class="title">The Vault</div>
+
+  <div class="rule"></div>
+
+  <div class="tagline">
+    Some assets are stronger when locked.<br>
+    You already know if you belong here.
+  </div>
+
+  <form class="form" id="vaultForm" onsubmit="enterVault(event)">
+    <div class="form-row">
+      <input
+        class="form-input"
+        id="vaultInput"
+        type="text"
+        placeholder="invite code or email"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="form-btn" type="submit">Enter</button>
+    </div>
+    <div class="form-note" id="formNote">sealed · authenticated · sovereign</div>
+  </form>
+
+  <div class="aetherion">El ter sel is. &nbsp;·&nbsp; MIRROR™ &nbsp;·&nbsp; ellari-vault.com</div>
+
+</main>
+
+<script>
+function enterVault(e) {
+  e.preventDefault();
+  const val = document.getElementById('vaultInput').value.trim();
+  const note = document.getElementById('formNote');
+
+  if (!val) {
+    note.textContent = 'a code or email is required';
+    note.style.color = '#c04060';
+    return;
+  }
+
+  // Pattern: invite codes are uppercase alphanumeric, 8-12 chars
+  // Emails contain @
+  // Everything else: queue entry
+  const isCode = /^[A-Z0-9]{6,14}$/i.test(val);
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+
+  if (isCode) {
+    note.textContent = 'verifying seal…';
+    note.style.color = '#c8a84b';
+    setTimeout(() => {
+      // In production: POST to /api/verify with the code
+      // For now: static gate with placeholder codes
+      const validCodes = ['BLACKFAIRY', 'MIRRORVAULT', 'ELTERSELIS', 'VOLTAGEKEY'];
+      if (validCodes.includes(val.toUpperCase())) {
+        note.textContent = 'access granted. entering…';
+        note.style.color = '#40c080';
+        document.getElementById('stage').classList.add('entering');
+        setTimeout(() => { window.location.href = '/grimoire'; }, 1100);
+      } else {
+        note.textContent = 'seal not recognized';
+        note.style.color = '#c04060';
+      }
+    }, 900);
+  } else if (isEmail) {
+    note.textContent = 'sealing your address…';
+    note.style.color = '#c8a84b';
+    setTimeout(() => {
+      // In production: POST email to waitlist/auth endpoint
+      note.textContent = 'sealed. watch for the vault signal.';
+      note.style.color = '#9b6fd0';
+      document.getElementById('vaultInput').value = '';
+    }, 1200);
+  } else {
+    note.textContent = 'invite code or email only';
+    note.style.color = '#c04060';
+  }
+}
+
+// Subtle lightning flicker on the background ambient
+(function ambientFlicker() {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity 0.08s';
+  document.body.appendChild(canvas);
+
+  function flash() {
+    const delay = 4000 + Math.random() * 8000;
+    setTimeout(() => {
+      canvas.style.opacity = '0.012';
+      setTimeout(() => {
+        canvas.style.opacity = '0';
+        flash();
+      }, 60 + Math.random() * 80);
+    }, delay);
+  }
+  flash();
+})();
+</script>
+</body>
+</html>
