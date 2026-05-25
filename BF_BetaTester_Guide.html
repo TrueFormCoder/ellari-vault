@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Black Fairy Beta Test — Tester Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#050407; --panel:#0e0b16; --deep:#13101e;
+  --violet:#8050b8; --violet2:#a878e0; --violet3:#c8a8f8;
+  --silver:#c9c4cf; --silver2:#8888a0; --mist:#505068;
+  --white:#ede8f8; --border:#2a2248;
+  --red:#c04060; --green:#40a060; --amber:#c89040;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--void);color:var(--white);font-family:'Cormorant Garamond',serif;font-size:15px;line-height:1.65;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.03;
+ background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+ background-size:160px;}
+
+.wrap{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:48px 24px 80px;}
+
+/* HEADER */
+.doc-header{text-align:center;padding-bottom:32px;border-bottom:1px solid var(--border);margin-bottom:40px;}
+.dh-kicker{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.4em;color:var(--mist);text-transform:uppercase;display:block;margin-bottom:12px;}
+.dh-title{font-size:clamp(28px,5vw,40px);font-weight:300;letter-spacing:.1em;margin-bottom:8px;}
+.dh-title span{color:var(--violet2);}
+.dh-sub{font-size:13px;font-style:italic;color:var(--silver2);}
+.dh-rule{width:48px;height:1px;background:var(--violet);margin:16px auto 0;}
+
+/* SAFETY BOX */
+.safety-box{background:rgba(192,64,96,.08);border:1px solid rgba(192,64,96,.3);border-radius:4px;padding:20px 22px;margin-bottom:32px;}
+.sb-label{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.35em;text-transform:uppercase;color:var(--red);display:block;margin-bottom:8px;}
+.sb-text{font-size:13px;color:var(--silver);line-height:1.7;}
+.sb-text strong{color:var(--white);}
+
+.stop-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px;}
+@media(max-width:580px){.stop-grid{grid-template-columns:1fr;}}
+.stop-item{background:rgba(0,0,0,.2);border-radius:3px;padding:10px 12px;}
+.si-label{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.2em;color:var(--mist);text-transform:uppercase;display:block;margin-bottom:4px;}
+.si-text{font-size:12px;color:var(--silver);line-height:1.5;}
+
+/* SECTIONS */
+.section{margin-bottom:36px;}
+.sec-num{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.3em;color:var(--mist);text-transform:uppercase;display:block;margin-bottom:6px;}
+.sec-title{font-size:20px;font-weight:300;letter-spacing:.08em;color:var(--white);margin-bottom:14px;}
+.sec-rule{width:100%;height:1px;background:linear-gradient(90deg,var(--border),transparent);margin-bottom:16px;}
+
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column;gap:0;}
+.tl-row{display:grid;grid-template-columns:80px 1fr;gap:0;border-bottom:1px solid rgba(42,34,72,.4);}
+.tl-time{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--violet3);padding:12px 16px 12px 0;display:flex;align-items:flex-start;padding-top:14px;}
+.tl-action{font-size:13px;color:var(--silver);padding:12px 0;line-height:1.6;}
+.tl-action strong{color:var(--white);}
+
+/* SCORING */
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:480px){.score-grid{grid-template-columns:1fr;}}
+.score-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:14px 16px;}
+.sc-metric{font-size:14px;color:var(--white);margin-bottom:4px;letter-spacing:.04em;}
+.sc-scale{font-family:'Space Mono',monospace;font-size:8px;color:var(--violet3);letter-spacing:.1em;margin-bottom:6px;}
+.sc-def{font-size:12px;color:var(--mist);line-height:1.5;}
+.sc-pass{font-family:'Space Mono',monospace;font-size:7.5px;color:var(--green);letter-spacing:.1em;margin-top:6px;}
+
+/* PASS STANDARD */
+.pass-box{background:rgba(64,160,96,.06);border:1px solid rgba(64,160,96,.25);border-radius:4px;padding:16px 18px;margin-top:14px;}
+.pb-label{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.3em;color:var(--green);text-transform:uppercase;display:block;margin-bottom:6px;}
+.pb-text{font-size:13px;color:var(--silver);line-height:1.6;}
+
+/* DECISION RULES */
+.decision-table{width:100%;border-collapse:collapse;}
+.decision-table th{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.25em;color:var(--mist);text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;}
+.decision-table td{padding:10px 12px;border-bottom:1px solid rgba(42,34,72,.3);font-size:13px;vertical-align:top;}
+.dt-promote{color:var(--green);}
+.dt-revise{color:var(--amber);}
+.dt-split{color:var(--violet2);}
+.dt-quarantine{color:var(--silver2);}
+.dt-retire{color:var(--red);}
+
+/* FORMS */
+.form-section{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:20px 22px;margin-bottom:16px;}
+.form-title{font-size:16px;letter-spacing:.06em;color:var(--white);margin-bottom:14px;}
+.form-row{margin-bottom:12px;}
+.fr-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;color:var(--mist);text-transform:uppercase;display:block;margin-bottom:4px;}
+.fr-field{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);padding:6px 0;color:var(--white);font-family:'Cormorant Garamond',serif;font-size:13px;outline:none;caret-color:var(--violet2);}
+.fr-field::placeholder{color:rgba(80,80,104,.5);}
+.fr-field:focus{border-bottom-color:var(--violet);}
+.dots{width:100%;border:none;border-bottom:2px dotted var(--border);height:24px;background:transparent;}
+
+/* FACILITATOR SCRIPT */
+.script-block{background:rgba(128,80,184,.07);border-left:3px solid var(--violet);padding:14px 18px;margin-bottom:10px;border-radius:0 4px 4px 0;}
+.sb-when{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.25em;color:var(--violet3);text-transform:uppercase;display:block;margin-bottom:6px;}
+.sb-say{font-size:13.5px;font-style:italic;color:var(--silver);line-height:1.6;}
+
+/* SCOPE */
+.scope-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:480px){.scope-grid{grid-template-columns:1fr;}}
+.scope-box{background:var(--panel);border-radius:4px;padding:14px 16px;}
+.scope-box.ok{border:1px solid rgba(64,160,96,.3);}
+.scope-box.no{border:1px solid rgba(192,64,96,.25);}
+.scope-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;display:block;margin-bottom:8px;}
+.scope-box.ok .scope-label{color:var(--green);}
+.scope-box.no .scope-label{color:var(--red);}
+.scope-item{font-size:12.5px;color:var(--mist);padding:3px 0;line-height:1.5;}
+
+/* CLOSING NOTE */
+.close-note{border:1px solid var(--border);border-radius:4px;padding:18px 20px;text-align:center;margin-top:36px;}
+.cn-phrase{font-size:18px;font-style:italic;color:var(--violet3);margin-bottom:6px;}
+.cn-sub{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;color:var(--mist);text-transform:uppercase;}
+
+/* PRINT */
+@media print{
+  body{background:#fff;color:#000;}
+  .safety-box{border-color:#c04060;}
+  .sb-text,.sc-def,.tl-action,.sb-say{color:#333;}
+  .sec-title,.dh-title,.sc-metric,.form-title{color:#000;}
+  .fr-field,.fr-field::placeholder{color:#666;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="doc-header">
+    <span class="dh-kicker">Black Fairy · Beta Test Kit V1 · 2026-05-23</span>
+    <h1 class="dh-title">Tester <span>Guide</span></h1>
+    <div class="dh-sub">Mirror Audit Ritual Cards · Clarity Cards · Proof before scale.</div>
+    <div class="dh-rule"></div>
+  </div>
+
+  <!-- SAFETY -->
+  <div class="safety-box">
+    <span class="sb-label">⚠ Safety Insert — Read First</span>
+    <p class="sb-text">This is a <strong>symbolic reflection and pattern-recognition test.</strong> It does not tell the future, diagnose people, prove motives, replace professional advice, or authorize escalation. Use it to clarify your own perception, boundaries, choices, and next action.</p>
+    <p class="sb-text" style="margin-top:8px;"><strong>Stop immediately</strong> if you become frantic, punitive, obsessive, or more certain without new evidence.</p>
+    <div class="stop-grid">
+      <div class="stop-item">
+        <span class="si-label">No-read condition</span>
+        <div class="si-text">Wanting punishment, prediction, certainty about another person, or permission to escalate.</div>
+      </div>
+      <div class="stop-item">
+        <span class="si-label">Stop signal</span>
+        <div class="si-text">Frantic body state, compulsive rereading, urge to pull more cards, or a stronger story without stronger evidence.</div>
+      </div>
+      <div class="stop-item">
+        <span class="si-label">Grounding close</span>
+        <div class="si-text">Name one fact. Name one ordinary next step. Put the deck away.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCOPE -->
+  <div class="section">
+    <span class="sec-num">01</span>
+    <div class="sec-title">What this test is for</div>
+    <div class="sec-rule"></div>
+    <div class="scope-grid">
+      <div class="scope-box ok">
+        <span class="scope-label">✓ Use for</span>
+        <div class="scope-item">Work decisions (project, next step, creative direction)</div>
+        <div class="scope-item">Personal low-risk situations</div>
+        <div class="scope-item">Creative or workflow questions</div>
+        <div class="scope-item">Synthetic / hypothetical scenarios</div>
+      </div>
+      <div class="scope-box no">
+        <span class="scope-label">✕ Do not use for</span>
+        <div class="scope-item">Crisis, legal, medical, or financial decisions</div>
+        <div class="scope-item">Custody, immigration, or safety decisions</div>
+        <div class="scope-item">Diagnosis or prediction</div>
+        <div class="scope-item">Permission to escalate against another person</div>
+      </div>
+    </div>
+    <div class="pass-box" style="margin-top:12px;">
+      <span class="pb-label">What counts as valid data</span>
+      <p class="pb-text">A stopped test is usable data. Confusion is revision signal. You do not need to complete the full session for the feedback to count.</p>
+    </div>
+  </div>
+
+  <!-- INTAKE -->
+  <div class="section">
+    <span class="sec-num">02</span>
+    <div class="sec-title">Before you start — intake</div>
+    <div class="sec-rule"></div>
+    <div class="form-section">
+      <div class="form-title">Tester Intake</div>
+      <div class="form-row">
+        <span class="fr-label">Tester ID (initials or code)</span>
+        <div class="dots"></div>
+      </div>
+      <div class="form-row">
+        <span class="fr-label">Date</span>
+        <div class="dots"></div>
+      </div>
+      <div class="form-row">
+        <span class="fr-label">Scenario type</span>
+        <div class="fr-field" style="color:var(--mist);font-style:italic;border-bottom:1px dotted var(--border);pointer-events:none;">Work / Creative / Personal low-risk / Synthetic</div>
+      </div>
+      <div class="form-row">
+        <span class="fr-label">Current clarity 0–10</span>
+        <div class="dots"></div>
+      </div>
+      <div class="form-row">
+        <span class="fr-label">Current stress / load 0–10</span>
+        <div class="dots"></div>
+      </div>
+      <div class="form-row">
+        <span class="fr-label">What would count as useful improvement</span>
+        <div class="dots"></div>
+        <div class="dots" style="margin-top:6px;"></div>
+      </div>
+      <div class="form-row" style="margin-bottom:0">
+        <span class="fr-label">Anything to avoid</span>
+        <div class="dots"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 20-MINUTE FLOW -->
+  <div class="section">
+    <span class="sec-num">03</span>
+    <div class="sec-title">20-minute session</div>
+    <div class="sec-rule"></div>
+    <div class="timeline">
+      <div class="tl-row">
+        <div class="tl-time">0–2 min</div>
+        <div class="tl-action"><strong>Orient.</strong> Read the safety insert. Confirm this is a low-risk scenario. If not, stop here — that is valid data.</div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-time">3–5 min</div>
+        <div class="tl-action"><strong>Ground the situation.</strong> Write one observable fact about what is happening. Not an interpretation. A fact you could photograph or point to.</div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-time">6–8 min</div>
+        <div class="tl-action"><strong>Select one card.</strong> No explanation from the facilitator. You choose the card that seems to fit. Read it on your own first.</div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-time">9–12 min</div>
+        <div class="tl-action"><strong>Answer the card question.</strong> One sentence. If you cannot answer in one sentence, note that — it is revision data about the card.</div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-time">13–16 min</div>
+        <div class="tl-action"><strong>Name one small move and a done-for-now state.</strong> What will you do? When will this be complete enough to set down?</div>
+      </div>
+      <div class="tl-row" style="border-bottom:none;">
+        <div class="tl-time">17–20 min</div>
+        <div class="tl-action"><strong>Score the card.</strong> Use the six scoring criteria below. Record your scores and any confusion points.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONE-PULL FORM -->
+  <div class="section">
+    <span class="sec-num">04</span>
+    <div class="sec-title">One-pull test form</div>
+    <div class="sec-rule"></div>
+    <div class="form-section">
+      <div class="form-title">Session Record</div>
+      <div class="form-row">
+        <span class="fr-label">Observable fact (one sentence, observable — not an interpretation)</span>
+        <div class="dots"></div><div class="dots" style="margin-top:6px;"></div>
+      </div>
+      <div class="form-row">
+        <span class="fr-label">Card selected</span>
+        <div class="dots"></div>
+      </div>
+      <div class="form-row">
+        <span class="fr-label">Why this card</span>
+        <div class="dots"></div><div class="dots" style="margin-top:6px;"></div>
+      </div>
+      <div class="form-row">
+        <span class="fr-label">Card question answer (one sentence)</span>
+        <div class="dots"></div><div class="dots" style="margin-top:6px;"></div>
+      </div>
+      <div class="form-row">
+        <span class="fr-label">One small move</span>
+        <div class="dots"></div>
+      </div>
+      <div class="form-row">
+        <span class="fr-label">Done for now — when is this complete enough to set down?</span>
+        <div class="dots"></div>
+      </div>
+      <div class="form-row">
+        <span class="fr-label">Confusion point (what didn't land)</span>
+        <div class="dots"></div><div class="dots" style="margin-top:6px;"></div>
+      </div>
+      <div class="form-row">
+        <span class="fr-label">What made this easier</span>
+        <div class="dots"></div>
+      </div>
+      <div class="form-row" style="margin-bottom:0">
+        <span class="fr-label">What made this heavier</span>
+        <div class="dots"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCORING -->
+  <div class="section">
+    <span class="sec-num">05</span>
+    <div class="sec-title">Scoring criteria</div>
+    <div class="sec-rule"></div>
+    <div class="score-grid">
+      <div class="score-card">
+        <div class="sc-metric">Clarity</div>
+        <div class="sc-scale">Scale 1–5 · Target: 4+</div>
+        <div class="sc-def">Can you understand what the card is asking without help? 1 = completely unclear. 5 = immediately obvious.</div>
+        <div class="sc-pass">Score: ___</div>
+      </div>
+      <div class="score-card">
+        <div class="sc-metric">Safety</div>
+        <div class="sc-scale">Scale 1–5 · Target: 4+</div>
+        <div class="sc-def">Does the card avoid diagnosis, motive-proof, or escalation? 1 = unsafe framing. 5 = clean and bounded.</div>
+        <div class="sc-pass">Score: ___</div>
+      </div>
+      <div class="score-card">
+        <div class="sc-metric">Actionability</div>
+        <div class="sc-scale">Scale 1–5 · Target: 4+</div>
+        <div class="sc-def">Does the card create one doable next step? 1 = leaves you stuck. 5 = one clear move exists.</div>
+        <div class="sc-pass">Score: ___</div>
+      </div>
+      <div class="score-card" style="border-left:3px solid rgba(200,144,64,.3);">
+        <div class="sc-metric">Cognitive Load</div>
+        <div class="sc-scale">Scale 1–5 · Target: 3 or lower</div>
+        <div class="sc-def">1 = light, easy. 5 = too heavy, too complex. The card passes only if load is 3 or under.</div>
+        <div class="sc-pass" style="color:var(--amber);">Score: ___ (lower is better)</div>
+      </div>
+      <div class="score-card">
+        <div class="sc-metric">Portability</div>
+        <div class="sc-scale">Scale 1–5 · Target: 4+</div>
+        <div class="sc-def">Can you use the card cold, without someone explaining it to you? 1 = needs the creator. 5 = fully self-contained.</div>
+        <div class="sc-pass">Score: ___</div>
+      </div>
+      <div class="score-card">
+        <div class="sc-metric">Done-State</div>
+        <div class="sc-scale">Scale 1–5 · Target: 4+</div>
+        <div class="sc-def">Can you say what is complete enough for now? 1 = no clear stopping point. 5 = the stop is obvious.</div>
+        <div class="sc-pass">Score: ___</div>
+      </div>
+    </div>
+    <div class="pass-box" style="margin-top:14px;">
+      <span class="pb-label">Pass Standard</span>
+      <p class="pb-text">A card passes the first beta check when average Clarity, Safety, Actionability, Portability, and Done-State are <strong>4 or higher</strong>, and Cognitive Load is <strong>3 or lower</strong>. No tester reports diagnosis, prediction, motive-proof, or escalation misuse.</p>
+    </div>
+  </div>
+
+  <!-- DECISION RULES -->
+  <div class="section">
+    <span class="sec-num">06</span>
+    <div class="sec-title">Card decision rules</div>
+    <div class="sec-rule"></div>
+    <table class="decision-table">
+      <thead>
+        <tr><th>Decision</th><th>When</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="dt-promote">Promote</td><td style="font-size:13px;color:#9090a8;">High clarity, low load, safe use, one next step, done-state present.</td></tr>
+        <tr><td class="dt-revise">Revise</td><td style="font-size:13px;color:#9090a8;">Useful but confusing, too abstract, or too wordy.</td></tr>
+        <tr><td class="dt-split">Split</td><td style="font-size:13px;color:#9090a8;">One card is doing two jobs. Separate into two cards.</td></tr>
+        <tr><td class="dt-quarantine">Quarantine</td><td style="font-size:13px;color:#9090a8;">Powerful but not public-ready. Operator-only until simplified.</td></tr>
+        <tr><td class="dt-retire" style="border-bottom:none;">Retire</td><td style="font-size:13px;color:#9090a8;border-bottom:none;">Duplicative, decorative, unsafe, or unused.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FACILITATOR SCRIPT -->
+  <div class="section">
+    <span class="sec-num">07</span>
+    <div class="sec-title">Facilitator script</div>
+    <div class="sec-rule"></div>
+    <div class="script-block">
+      <span class="sb-when">Opening</span>
+      <div class="sb-say">"Today we are testing whether one card can help you move from confusion to one clean next step. This is not therapy, legal advice, diagnosis, prediction, or crisis support."</div>
+    </div>
+    <div class="script-block">
+      <span class="sb-when">During</span>
+      <div class="sb-say">"I will not interpret the card for you. I may ask you to separate fact from story, choose one next action, or define done for now."</div>
+    </div>
+    <div class="script-block">
+      <span class="sb-when">Stop</span>
+      <div class="sb-say">"We are stopping the exercise here. A stop is valid data. Name one fact. Choose one ordinary next step. Put the deck away."</div>
+    </div>
+    <div class="script-block" style="border-left-color:var(--silver);">
+      <span class="sb-when" style="color:var(--silver2);">Close</span>
+      <div class="sb-say">"What was clear. What was confusing. What action did you choose. What should be simpler."</div>
+    </div>
+  </div>
+
+  <!-- AFTER -->
+  <div class="section">
+    <span class="sec-num">08</span>
+    <div class="sec-title">After your session</div>
+    <div class="sec-rule"></div>
+    <p style="font-size:13px;color:var(--silver2);line-height:1.7;margin-bottom:12px;">Complete the scoring form and return it to the tracker. Your feedback directly determines which cards get produced, revised, or retired. There are no wrong scores. Confusion is data.</p>
+    <p style="font-size:13px;color:var(--silver2);line-height:1.7;"><strong style="color:var(--white);">Target:</strong> 30 tests across the first wave. Minimum 3 tests per card before any production decision. The deck is not public-ready until the data says so.</p>
+  </div>
+
+  <div class="close-note">
+    <div class="cn-phrase">Confusion is not failure. It is revision signal.</div>
+    <div class="cn-sub">MIRROR™ · ELARRI.AI · Beta Test Kit V1 · 2026-05-23</div>
+  </div>
+
+</div>
+</body>
+</html>

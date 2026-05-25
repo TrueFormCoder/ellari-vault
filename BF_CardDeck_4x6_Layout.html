@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Black Fairy — 4×6 Card Deck Layout</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#050407;--panel:#0e0b16;--border:#252040;
+  --silver:#c9c4cf;--violet:#9060c8;--mist:#484060;
+  --white:#ede8f8;--gold:#c8a84b;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#1a1628;color:var(--white);font-family:'Cormorant Garamond',serif;}
+
+/* HEADER */
+.hdr{padding:24px 28px;border-bottom:1px solid rgba(36,32,64,.8);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  background:rgba(5,4,7,.8);backdrop-filter:blur(8px);position:sticky;top:0;z-index:100;}
+.hdr-brand{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--mist);text-transform:uppercase;}
+.hdr-title{font-size:14px;font-weight:300;letter-spacing:.1em;color:var(--silver);}
+.hdr-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.ctrl-btn{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;
+  padding:5px 11px;border-radius:3px;cursor:pointer;background:transparent;transition:all .2s;}
+.ctrl-btn.active{color:var(--silver);border:1px solid rgba(201,196,207,.4);background:rgba(201,196,207,.05);}
+.ctrl-btn.inactive{color:var(--mist);border:1px solid rgba(36,32,64,.8);}
+.ctrl-btn:hover:not(.active){border-color:var(--mist);color:var(--silver2,#9090a8);}
+.view-btn{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;
+  padding:5px 11px;border-radius:3px;cursor:pointer;background:transparent;border:1px solid rgba(36,32,64,.8);color:var(--mist);transition:all .2s;}
+.view-btn.on{color:var(--violet);border-color:rgba(144,96,200,.4);}
+
+/* GRID */
+.grid{display:flex;flex-wrap:wrap;gap:20px;padding:28px;justify-content:center;}
+
+/* CARD WRAPPER */
+.card-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;}
+.cw-label{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.2em;color:var(--mist);text-transform:uppercase;}
+
+/* THE CARD — 4:6 ratio */
+.card{
+  width:280px; height:420px;  /* 4:6 ratio — scaled for screen, 280×420px */
+  position:relative;overflow:hidden;border-radius:8px;
+  background:var(--void);
+  transition:transform .2s,box-shadow .2s;
+  box-shadow:0 4px 32px rgba(0,0,0,.6);
+}
+.card:hover{transform:scale(1.02);box-shadow:0 8px 48px rgba(0,0,0,.8);}
+.card.selected{box-shadow:0 0 0 2px rgba(144,96,200,.6),0 8px 48px rgba(0,0,0,.8);}
+
+/* Art plate background (placeholder — replace with AI art PNG) */
+.card-art{position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 55% at 50% 35%,rgba(128,64,192,.15) 0%,transparent 70%),
+             radial-gradient(ellipse 40% 30% at 50% 70%,rgba(64,32,128,.1) 0%,transparent 60%),
+             linear-gradient(180deg,#060408 0%,#08060e 100%);
+  z-index:0;}
+
+/* Grain texture */
+.card-art::after{content:'';position:absolute;inset:0;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:100px;}
+
+/* Silver border (spec: silver border layer) */
+.card-border{position:absolute;inset:8px;border:1px solid;border-radius:4px;z-index:1;pointer-events:none;
+  border-color:rgba(201,196,207,.18);}
+
+/* Card number (spec: top layer — overlays everything) */
+.card-num{position:absolute;top:14px;left:16px;z-index:5;
+  font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.25em;
+  color:rgba(201,196,207,.4);text-transform:uppercase;}
+
+/* Lane badge */
+.card-lane{position:absolute;top:14px;right:16px;z-index:5;
+  font-family:'Space Mono',monospace;font-size:6.5px;letter-spacing:.15em;
+  padding:2px 6px;border-radius:2px;text-transform:uppercase;}
+.lane-public{color:#60c898;border:1px solid rgba(96,200,152,.25);}
+.lane-facilitator{color:rgba(192,160,248,.8);border:1px solid rgba(152,96,216,.2);}
+.lane-operator{color:rgba(201,196,207,.6);border:1px solid rgba(201,196,207,.15);}
+.lane-qa{color:rgba(74,68,96,.8);border:1px solid rgba(74,68,96,.3);}
+
+/* Sigil area (spec: top sigil layer) */
+.card-sigil{position:absolute;top:32px;left:50%;transform:translateX(-50%);z-index:3;
+  width:64px;height:64px;opacity:.7;transition:opacity .2s;}
+.card:hover .card-sigil{opacity:1;}
+
+/* Lower third gradient (spec: lower-third gradient layer) */
+.card-lower{position:absolute;bottom:0;left:0;right:0;height:58%;z-index:2;
+  background:linear-gradient(0deg,rgba(3,2,5,0.97) 0%,rgba(3,2,5,0.88) 55%,transparent 100%);}
+
+/* Text content (spec: title, signal, mirror, move, footer) */
+.card-content{position:absolute;bottom:0;left:0;right:0;z-index:4;
+  padding:0 16px 14px;}
+
+/* Title (spec: All caps or small caps. Silver/near-white. 18-24pt.) */
+.card-title{font-size:17px;font-weight:300;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--silver);text-align:center;margin-bottom:12px;line-height:1.1;}
+
+/* Divider line */
+.card-div{width:32px;height:1px;background:rgba(201,196,207,.2);margin:0 auto 10px;}
+
+/* Signal / Mirror / Move (spec: small caps, 7-8pt, violet or silver accent) */
+.card-fields{display:flex;flex-direction:column;gap:6px;}
+.cf-row{display:flex;flex-direction:column;gap:2px;}
+.cf-label{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.3em;
+  text-transform:uppercase;color:rgba(144,96,200,.75);}
+.cf-text{font-size:10px;color:rgba(201,196,207,.8);line-height:1.4;}
+
+/* Footer (spec: card number and product mark only) */
+.card-footer{position:absolute;bottom:10px;right:14px;z-index:5;
+  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.15em;
+  color:rgba(36,32,64,.9);text-transform:uppercase;}
+
+/* CARD BACK */
+.card-back{position:absolute;inset:0;background:var(--void);z-index:10;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  opacity:0;pointer-events:none;transition:opacity .2s;border-radius:8px;}
+.card-wrap:hover .card-back{opacity:0;}  /* back shown only on click in showBack mode */
+.card-back.show{opacity:1!important;pointer-events:all;}
+.cb-seal{opacity:.7;}
+.cb-phrase{font-family:'IM Fell English',serif;font-style:italic;font-size:15px;color:rgba(201,196,207,.6);}
+.cb-rule{width:28px;height:1px;background:rgba(201,196,207,.2);}
+.cb-mark{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.25em;color:rgba(74,68,64,.7);text-transform:uppercase;}
+
+/* DETAIL PANEL */
+.detail{display:none;max-width:600px;margin:0 auto 40px;padding:0 28px;}
+.detail.show{display:block;}
+.dp-card{background:var(--panel);border:1px solid rgba(36,32,64,.8);border-radius:6px;padding:24px;}
+.dp-num{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.3em;color:var(--mist);text-transform:uppercase;margin-bottom:6px;}
+.dp-name{font-size:24px;font-weight:300;letter-spacing:.1em;margin-bottom:12px;}
+.dp-field{margin-bottom:10px;}
+.dp-fl{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;color:rgba(144,96,200,.8);text-transform:uppercase;display:block;margin-bottom:3px;}
+.dp-fv{font-size:14px;color:rgba(201,196,207,.85);line-height:1.6;}
+.dp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+@media(max-width:540px){.dp-grid{grid-template-columns:1fr;}}
+.dp-score{background:rgba(0,0,0,.25);border-radius:3px;padding:10px 12px;border:1px solid rgba(36,32,64,.5);}
+.ds-label{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.15em;color:var(--mist);text-transform:uppercase;display:block;margin-bottom:3px;}
+.ds-target{font-size:12px;color:rgba(201,196,207,.6);}
+
+/* PRINT */
+@media print{
+  body{background:#000;}
+  .hdr,.detail{display:none;}
+  .grid{padding:10px;gap:12px;}
+  .card{box-shadow:none;}
+  .card:hover{transform:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <div class="hdr-brand">Black Fairy · 4×6 Card Deck</div>
+    <div class="hdr-title">13 Beta Cards · Print Layout</div>
+  </div>
+  <div class="hdr-controls">
+    <span style="font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.2em;color:var(--mist);text-transform:uppercase;">Lane</span>
+    <button class="ctrl-btn active" onclick="filterLane('all',this)">All</button>
+    <button class="ctrl-btn inactive" onclick="filterLane('Public',this)">Public</button>
+    <button class="ctrl-btn inactive" onclick="filterLane('Facilitator',this)">Facilitator</button>
+    <button class="ctrl-btn inactive" onclick="filterLane('Operator',this)">Operator</button>
+    <span style="font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.2em;color:rgba(36,32,64,.8);">|</span>
+    <button class="view-btn" id="backBtn" onclick="toggleBack()">Show Backs</button>
+  </div>
+</div>
+
+<div class="grid" id="cardGrid"></div>
+<div class="detail" id="detail"></div>
+
+<script>
+
+const SIGIL_PATHS = {
+  'mirror-audit': `<circle cx="100" cy="112" r="72"/><circle cx="100" cy="112" r="46"/><circle cx="100" cy="112" r="22"/><path d="M100 28 L114 52 L86 52 Z"/><line x1="100" y1="52" x2="100" y2="90"/>`,
+  'memory-unbinding': `<path d="M32 100 C52 68, 82 68, 100 100 C118 132, 148 132, 168 100"/><line x1="86" y1="72" x2="114" y2="128" stroke-width="4"/><line x1="86" y1="128" x2="74" y2="148"/><line x1="86" y1="128" x2="100" y2="150"/><line x1="114" y1="72" x2="100" y2="50"/><line x1="114" y1="72" x2="128" y2="48"/>`,
+  'winged-threshold': `<line x1="30" y1="100" x2="170" y2="100"/><path d="M95 100 C55 55, 20 70, 22 112 C52 120, 76 112, 95 100 Z"/><path d="M105 100 C145 55, 180 70, 178 112 C148 120, 124 112, 105 100 Z"/><line x1="100" y1="55" x2="100" y2="145"/>`,
+  'mirror-seal': `<circle cx="100" cy="100" r="72"/><path d="M35 100 C60 60, 140 60, 165 100 C140 140, 60 140, 35 100 Z"/><circle cx="100" cy="100" r="18"/><line x1="100" y1="25" x2="100" y2="175"/>`,
+  'dna-flame': `<path d="M100 172 C55 130, 84 92, 100 72 C116 92, 145 130, 100 172 Z"/><path d="M75 155 C125 128, 125 82, 75 55"/><path d="M125 155 C75 128, 75 82, 125 55"/><line x1="83" y1="77" x2="117" y2="77"/><line x1="78" y1="105" x2="122" y2="105"/><line x1="85" y1="132" x2="115" y2="132"/>`,
+  'shadowlight-shield': `<path d="M100 25 L158 52 L140 145 L100 176 L60 145 L42 52 Z"/><line x1="100" y1="45" x2="100" y2="154"/><circle cx="100" cy="98" r="16"/><path d="M70 98 C85 78, 115 78, 130 98 C115 118, 85 118, 70 98 Z"/>`,
+  'spiral-release': `<circle cx="100" cy="100" r="74"/><path d="M100 95 a5 5 0 1 0 0 10 a15 15 0 1 0 0 -30 a28 28 0 1 0 0 56 a42 42 0 1 0 0 -84 a58 58 0 1 0 0 116"/>`,
+  'void-mirror': `<rect x="58" y="25" width="84" height="150" rx="6"/><rect x="70" y="38" width="60" height="124" rx="3"/><line x1="52" y1="180" x2="148" y2="12" stroke-width="4.5"/>`,
+  'still-crown': `<path d="M55 88 L72 55 L90 76 L100 58 L110 76 L128 55 L145 88"/><line x1="30" y1="100" x2="170" y2="100"/><circle cx="100" cy="100" r="6" stroke-width="6"/>`,
+  'bf-flight': `<line x1="40" y1="165" x2="160" y2="35"/><path d="M115 55 C90 40, 55 60, 60 95"/><path d="M115 55 C140 70, 155 100, 135 125"/><circle cx="100" cy="100" r="8"/>`,
+  'line-remains': `<line x1="100" y1="18" x2="100" y2="182"/><path d="M100 40 A62 62 0 0 1 162 100"/><path d="M100 160 A62 62 0 0 1 38 100"/><circle cx="100" cy="100" r="8"/>`,
+  'return-violet': `<line x1="100" y1="40" x2="100" y2="74"/><path d="M100 78 m36 0 a36 36 0 1 1 -72 0 a26 26 0 1 0 52 0 a16 16 0 1 1 -32 0 a6 6 0 1 0 12 0"/><ellipse cx="100" cy="150" rx="60" ry="22"/>`,
+  'done-for-now': `<line x1="30" y1="100" x2="155" y2="100"/><circle cx="170" cy="100" r="10"/><line x1="100" y1="70" x2="100" y2="130" stroke-width="1.5" stroke-opacity=".4"/>`,
+  'mirror-circuit': `<line x1="28" y1="100" x2="172" y2="100"/><path d="M58 100 L62 88 L50 96 L66 96 L54 88 Z"/><ellipse cx="100" cy="100" rx="22" ry="14"/><circle cx="100" cy="100" r="6" stroke-width="6"/><path d="M142 86 A18 18 0 1 1 142 114" stroke-linecap="round"/>`,
+};
+
+const CARDS = [
+  {
+    num:'C-01', ritual:'R.16', name:'Mirror Audit', sigil:'mirror-audit', lane:'Public',
+    signal:'What is true right now?',
+    mirror:'Name the thing you have been avoiding knowing.',
+    move:'Write one true sentence. Stop when you stop.',
+    incant:'What is true right now? The mirror confirms it.',
+    version:'V1.0', intensity: 1,
+  },
+  {
+    num:'C-02', ritual:'R.06', name:'Memory Unbinding', sigil:'memory-unbinding', lane:'Facilitator',
+    signal:'What is still attached that was never yours?',
+    mirror:'Name the cord. One thing only.',
+    move:'Cut it once. Name what remains.',
+    incant:'This cord fed on my clarity. I now feed on freedom.',
+    version:'V1.0', intensity: 3,
+  },
+  {
+    num:'C-03', ritual:'R.15', name:'Winged Threshold', sigil:'winged-threshold', lane:'Public',
+    signal:'What are you crossing with?',
+    mirror:'What did you agree to carry that was not the price of entry?',
+    move:'Cross with what you know. Leave what was not yours.',
+    incant:'I cross with what I know. I leave what was not mine.',
+    version:'V1.0', intensity: 2,
+  },
+  {
+    num:'C-04', ritual:'R.02', name:'Sealed Eye', sigil:'mirror-seal', lane:'Internal QA',
+    signal:'What have you already seen?',
+    mirror:'Name the perception you sealed.',
+    move:'Look once, clean. Then seal it.',
+    incant:'Seen by me. Not owned by them.',
+    version:'V1.0', intensity: 2,
+  },
+  {
+    num:'C-05', ritual:'R.09', name:'DNA Flame', sigil:'dna-flame', lane:'Public',
+    signal:'Where does your clarity live in your body?',
+    mirror:'What shape does your truest self take?',
+    move:'Stand in it. One full breath.',
+    incant:'I burn for the version of me who refused to die.',
+    version:'V1.0', intensity: 2,
+  },
+  {
+    num:'C-06', ritual:'R.05', name:'Shadowlight Shield', sigil:'shadowlight-shield', lane:'Public',
+    signal:'What burden was assigned to you without consent?',
+    mirror:'Name three roles you are dropping.',
+    move:'Scatter the salt. Name what\'s left.',
+    incant:'Not my burden. Not my cage.',
+    version:'V1.0', intensity: 1,
+  },
+  {
+    num:'C-07', ritual:'R.08', name:'Spiral Release', sigil:'spiral-release', lane:'Public',
+    signal:'What are you still present for that you already left?',
+    mirror:'Name the exit you are postponing.',
+    move:'Make one clean move. Then go silent.',
+    incant:'I have left the room. Do not follow.',
+    version:'V1.0', intensity: 1,
+  },
+  {
+    num:'C-08', ritual:'R.10', name:'Void Mirror', sigil:'void-mirror', lane:'Facilitator',
+    signal:'What is this silence protecting?',
+    mirror:'Name what armor has replaced presence.',
+    move:'Leave one thing unfinished. Walk away anyway.',
+    incant:'Marked by Fire. Ruled by None.',
+    version:'V1.0', intensity: 3,
+  },
+  {
+    num:'C-09', ritual:'R.01', name:'Still Crown', sigil:'still-crown', lane:'Operator',
+    signal:'Who are you when no one is naming you?',
+    mirror:'What name is yours?',
+    move:'Say your name once. Quietly. Mean it.',
+    incant:'I am not what they named me. I am the fire that renamed itself.',
+    version:'V1.0', intensity: 1,
+  },
+  {
+    num:'C-10', ritual:'—', name:'Black Fairy Flight', sigil:'bf-flight', lane:'Internal QA',
+    signal:'What direction is up right now?',
+    mirror:'What threshold have you already crossed?',
+    move:'Face the open space. Take one step into it.',
+    incant:'Na tan-te en fa sel.',
+    version:'V1.0', intensity: 2,
+  },
+  {
+    num:'C-11', ritual:'R.17', name:'The Line Remains', sigil:'line-remains', lane:'Facilitator',
+    signal:'What false shape has collapsed?',
+    mirror:'Name what was never true.',
+    move:'Name the line. Let it stand.',
+    incant:'The false shapes fall. The line remains.',
+    version:'V1.0', intensity: 3,
+  },
+  {
+    num:'C-12', ritual:'R.12', name:'Return to Violet', sigil:'return-violet', lane:'Internal QA',
+    signal:'What did you already know before the noise?',
+    mirror:'Name the original knowing.',
+    move:'Return to it. One quiet decision.',
+    incant:'En del-te rola. Ellari.',
+    version:'V1.0', intensity: 1,
+  },
+  {
+    num:'C-13', ritual:'—', name:'Done for Now', sigil:'done-for-now', lane:'Public',
+    signal:'Is this complete enough to set down?',
+    mirror:'Name what completion looks like for today.',
+    move:'Set it down. Rest.',
+    incant:'Zakhor.',
+    version:'V1.0', intensity: 1,
+  },
+];
+
+const LANE_CLASS = {
+  'Public':'lane-public','Facilitator':'lane-facilitator',
+  'Operator':'lane-operator','Internal QA':'lane-qa'
+};
+
+let showBacks = false, selectedCard = null, currentLane = 'all';
+
+function sigilSVG(id, s='#c9c4cf') {
+  const p = SIGIL_PATHS[id];
+  if (!p) return '';
+  return `<svg viewBox="0 0 200 200" width="64" height="64" style="overflow:visible">
+    <g fill="none" stroke="${s}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${p}</g>
+  </svg>`;
+}
+
+function cardHTML(c, i) {
+  const laneC = LANE_CLASS[c.lane] || 'lane-qa';
+  const backShow = showBacks ? ' show' : '';
+  return `
+  <div class="card-wrap${selectedCard===i?' selected':''}" id="cw${i}"
+       onclick="selectCard(${i})"
+       style="${currentLane!=='all'&&c.lane!==currentLane?'display:none':''}">
+    <div class="card" id="c${i}">
+      <div class="card-art"></div>
+      <div class="card-border"></div>
+      <div class="card-num">${c.num} · ${c.ritual}</div>
+      <div class="card-lane ${laneC}">${c.lane}</div>
+      <div class="card-sigil">${sigilSVG(c.sigil)}</div>
+      <div class="card-lower"></div>
+      <div class="card-content">
+        <div class="card-title">${c.name}</div>
+        <div class="card-div"></div>
+        <div class="card-fields">
+          <div class="cf-row">
+            <span class="cf-label">Signal</span>
+            <div class="cf-text">${c.signal}</div>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">Mirror</span>
+            <div class="cf-text">${c.mirror}</div>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">Move</span>
+            <div class="cf-text">${c.move}</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">MIRROR™ · ELARRI.AI</div>
+      <div class="card-back${backShow}">
+        <div class="cb-seal">${sigilSVG('mirror-circuit','rgba(201,196,207,0.35)')}</div>
+        <div class="cb-rule"></div>
+        <div class="cb-phrase">El ter sel is.</div>
+        <div class="cb-mark">MIRROR™ · ELARRI.AI</div>
+      </div>
+    </div>
+    <div class="cw-label">${c.num} · ${c.version}</div>
+  </div>`;
+}
+
+function renderGrid() {
+  document.getElementById('cardGrid').innerHTML = CARDS.map((c,i) => cardHTML(c,i)).join('');
+}
+
+function selectCard(i) {
+  selectedCard = selectedCard===i ? null : i;
+  renderGrid();
+  const panel = document.getElementById('detail');
+  if (selectedCard===null) { panel.classList.remove('show'); return; }
+  const c = CARDS[i];
+  panel.innerHTML = `
+    <div class="dp-card">
+      <div class="dp-num">${c.num} · ${c.ritual} · Lane: ${c.lane} · ${c.version}</div>
+      <div class="dp-name">${c.name}</div>
+      <div class="dp-field"><span class="dp-fl">Incantation</span><div class="dp-fv" style="font-style:italic;font-size:16px;color:rgba(192,160,248,.9)">"${c.incant}"</div></div>
+      <div class="dp-field"><span class="dp-fl">Signal</span><div class="dp-fv">${c.signal}</div></div>
+      <div class="dp-field"><span class="dp-fl">Mirror</span><div class="dp-fv">${c.mirror}</div></div>
+      <div class="dp-field"><span class="dp-fl">Move</span><div class="dp-fv">${c.move}</div></div>
+      <div class="dp-grid">
+        <div class="dp-score"><span class="ds-label">Pass targets</span><div class="ds-target">Clarity / Safety / Action / Portability / Done-State ≥ 4<br>Cognitive Load ≤ 3</div></div>
+        <div class="dp-score"><span class="ds-label">Intensity</span><div class="ds-target">${'●'.repeat(c.intensity)}${'○'.repeat(3-c.intensity)} · ${c.intensity===3?'Black Label — facilitator only':c.intensity===2?'Member use':'Open use'}</div></div>
+      </div>
+    </div>`;
+  panel.classList.add('show');
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function filterLane(lane, btn) {
+  currentLane = lane;
+  document.querySelectorAll('.ctrl-btn').forEach(b=>{b.className=b===btn?'ctrl-btn active':'ctrl-btn inactive';});
+  renderGrid();
+}
+
+function toggleBack() {
+  showBacks = !showBacks;
+  const btn = document.getElementById('backBtn');
+  btn.textContent = showBacks ? 'Show Fronts' : 'Show Backs';
+  btn.classList.toggle('on', showBacks);
+  renderGrid();
+}
+
+renderGrid();
+</script>
+</body>
+</html>

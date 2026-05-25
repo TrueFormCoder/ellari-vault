@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Black Fairy — Beta Submit + Production Gates</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#050407;--panel:#0e0b16;--panel2:#13101e;
+  --violet:#8050b8;--violet2:#a878e0;--violet3:#c8a8f8;
+  --silver:#c9c4cf;--silver2:#8888a0;--mist:#505068;
+  --white:#ede8f8;--border:#2a2248;--border2:#1e1838;
+  --green:#40a060;--green2:#60c080;--red:#c04060;--amber:#c89040;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--void);color:var(--white);font-family:'Cormorant Garamond',serif;font-size:15px;line-height:1.65;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px;}
+
+/* TABS */
+.tabs{position:sticky;top:0;z-index:100;background:rgba(5,4,7,.96);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border2);display:flex;padding:0 28px;height:50px;align-items:center;gap:4px;}
+.tab{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.25em;text-transform:uppercase;
+  padding:6px 14px;border-radius:3px;cursor:pointer;background:transparent;
+  border:1px solid transparent;color:var(--mist);transition:all .2s;}
+.tab.active{border-color:var(--border);color:var(--silver);background:rgba(255,255,255,.03);}
+.tab:hover:not(.active){color:var(--silver2);}
+.brand{margin-left:auto;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;color:var(--mist);}
+
+/* PAGES */
+.page{display:none;max-width:720px;margin:0 auto;padding:48px 24px 80px;position:relative;z-index:1;}
+.page.active{display:block;}
+
+/* SHARED */
+.page-kicker{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.4em;color:var(--mist);
+  text-transform:uppercase;display:block;margin-bottom:10px;}
+.page-title{font-size:clamp(24px,4vw,36px);font-weight:300;letter-spacing:.1em;margin-bottom:8px;}
+.page-title span{color:var(--violet2);}
+.page-sub{font-size:13px;font-style:italic;color:var(--silver2);margin-bottom:32px;line-height:1.65;max-width:500px;}
+
+/* FORM BLOCKS */
+.form-block{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:22px;margin-bottom:14px;}
+.fb-title{font-size:16px;letter-spacing:.06em;color:var(--white);margin-bottom:16px;
+  border-bottom:1px solid var(--border2);padding-bottom:10px;}
+.field-row{margin-bottom:14px;}
+.fl{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;color:var(--mist);
+  text-transform:uppercase;display:block;margin-bottom:5px;}
+.fi{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);
+  padding:7px 0;color:var(--white);font-family:'Cormorant Garamond',serif;
+  font-size:14px;outline:none;caret-color:var(--violet2);}
+.fi::placeholder{color:rgba(80,80,104,.45);}
+.fi:focus{border-bottom-color:var(--violet);}
+select.fi{cursor:pointer;background:var(--panel);}
+textarea.fi{resize:vertical;min-height:56px;line-height:1.5;}
+
+/* SCORE SLIDERS */
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:480px){.score-grid{grid-template-columns:1fr;}}
+.score-box{background:var(--panel2);border:1px solid var(--border2);border-radius:3px;padding:14px 16px;}
+.score-box.load{border-left:3px solid rgba(200,144,64,.4);}
+.sb-metric{font-size:14px;color:var(--white);margin-bottom:2px;}
+.sb-note{font-size:11px;font-style:italic;color:var(--mist);margin-bottom:10px;}
+.sb-range{display:flex;align-items:center;gap:10px;}
+.score-input{flex:1;accent-color:var(--violet2);}
+.score-val{font-family:'Space Mono',monospace;font-size:11px;color:var(--violet3);width:20px;text-align:center;}
+.sb-target{font-family:'Space Mono',monospace;font-size:7.5px;color:var(--mist);margin-top:6px;letter-spacing:.1em;}
+
+/* SUBMIT */
+.submit-btn{width:100%;background:transparent;border:1px solid var(--violet);
+  color:var(--violet3);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.3em;
+  text-transform:uppercase;padding:14px;border-radius:3px;cursor:pointer;margin-top:8px;
+  transition:all .2s;}
+.submit-btn:hover{background:var(--violet);color:var(--white);}
+.success-msg{display:none;background:rgba(64,160,96,.08);border:1px solid rgba(64,160,96,.3);
+  border-radius:4px;padding:20px;text-align:center;margin-top:14px;}
+.success-msg.show{display:block;}
+.sm-phrase{font-size:18px;font-style:italic;color:var(--green2);margin-bottom:8px;}
+.sm-sub{font-family:'Space Mono',monospace;font-size:8px;color:var(--mist);letter-spacing:.2em;}
+
+/* EMAIL FIELD */
+.vault-note{background:rgba(128,80,184,.08);border:1px solid rgba(152,96,216,.25);
+  border-radius:4px;padding:16px 18px;margin-top:10px;}
+.vn-text{font-size:13px;font-style:italic;color:var(--silver2);line-height:1.65;margin-bottom:10px;}
+
+/* PRODUCTION GATES */
+.gates{display:flex;flex-direction:column;gap:0;}
+.gate{display:grid;grid-template-columns:40px 1fr;gap:0;border-bottom:1px solid var(--border2);padding:0;}
+.gate:last-child{border-bottom:none;}
+.g-num{display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:6px;}
+.g-circle{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Space Mono',monospace;font-size:10px;font-weight:700;}
+.g-circle.done{background:rgba(64,160,96,.15);border:1px solid rgba(64,160,96,.4);color:var(--green2);}
+.g-circle.active{background:rgba(152,96,216,.15);border:1px solid rgba(152,96,216,.5);color:var(--violet3);}
+.g-circle.locked{background:transparent;border:1px solid var(--border);color:var(--mist);}
+.g-line{flex:1;width:1px;background:var(--border);}
+.g-body{padding:20px 0 20px 20px;}
+.gb-tag{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.25em;text-transform:uppercase;display:block;margin-bottom:5px;}
+.gb-tag.done{color:var(--green2);}
+.gb-tag.active{color:var(--violet3);}
+.gb-tag.locked{color:var(--mist);}
+.gb-title{font-size:18px;font-weight:300;letter-spacing:.06em;color:var(--white);margin-bottom:6px;}
+.gb-desc{font-size:13px;font-style:italic;color:var(--silver2);line-height:1.6;margin-bottom:8px;}
+.gb-condition{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.1em;color:var(--mist);line-height:1.7;}
+.gb-condition .pass{color:var(--green2);}
+.gb-condition .pending{color:var(--amber);}
+.gb-condition .locked{color:var(--mist);}
+.gb-action{margin-top:10px;}
+.g-btn{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;
+  padding:7px 14px;border-radius:3px;background:transparent;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block;}
+.g-btn.active{border:1px solid var(--violet);color:var(--violet3);}
+.g-btn.active:hover{background:var(--violet);color:var(--white);}
+.g-btn.done{border:1px solid rgba(64,160,96,.3);color:var(--green2);}
+
+/* PROGRESS BAR */
+.progress-wrap{background:var(--panel);border:1px solid var(--border2);border-radius:4px;
+  padding:20px;margin-bottom:32px;}
+.pw-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.3em;color:var(--mist);
+  text-transform:uppercase;display:block;margin-bottom:10px;}
+.pw-bar{width:100%;height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:8px;}
+.pw-fill{height:100%;background:linear-gradient(90deg,var(--violet),var(--violet2));border-radius:2px;transition:width .6s ease;}
+.pw-stats{display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:8px;color:var(--mist);letter-spacing:.1em;}
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <button class="tab active" onclick="showPage('submit',this)">Submit Beta Test</button>
+  <button class="tab" onclick="showPage('gates',this)">Production Gates</button>
+  <span class="brand">MIRROR™ · ELARRI.AI</span>
+</div>
+
+<!-- ── BETA SUBMISSION FORM ─────────────────────────────────────────── -->
+<div class="page active" id="submit">
+  <span class="page-kicker">Black Fairy · Beta Test Kit V1 · Digital Submission</span>
+  <h1 class="page-title">Submit <span>your session</span></h1>
+  <p class="page-sub">Complete the form after your 20-minute session. A stopped session is valid — fill in what you have.</p>
+
+  <!-- Intake -->
+  <div class="form-block">
+    <div class="fb-title">Session Info</div>
+    <div class="field-row">
+      <span class="fl">Tester ID (initials or code)</span>
+      <input class="fi" type="text" id="testerId" placeholder="e.g. MK-01">
+    </div>
+    <div class="field-row">
+      <span class="fl">Card tested</span>
+      <select class="fi" id="cardSelected">
+        <option value="">— select a card —</option>
+        <option>Mirror Audit</option><option>Memory Unbinding</option>
+        <option>Winged Threshold</option><option>Sealed Eye</option>
+        <option>DNA Flame</option><option>Shadowlight Shield</option>
+        <option>Spiral Release</option><option>Void Mirror</option>
+        <option>Still Crown</option><option>Black Fairy Flight</option>
+        <option>The Line Remains</option><option>Return to Violet</option>
+        <option>Done for Now</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <span class="fl">Scenario type</span>
+      <select class="fi" id="scenarioType">
+        <option value="">— select —</option>
+        <option>Work</option><option>Creative</option>
+        <option>Personal low-risk</option><option>Synthetic</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <span class="fl">Session completed?</span>
+      <select class="fi" id="completed">
+        <option value="">— select —</option>
+        <option>Full session (20 min)</option>
+        <option>Partial session (valid stop)</option>
+        <option>Early stop (safety)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- One-pull -->
+  <div class="form-block">
+    <div class="fb-title">Session Record</div>
+    <div class="field-row">
+      <span class="fl">Observable fact (one sentence — what you could photograph)</span>
+      <textarea class="fi" id="fact" rows="2" placeholder="e.g. I have delayed the same email for four days."></textarea>
+    </div>
+    <div class="field-row">
+      <span class="fl">Card question answer (one sentence)</span>
+      <textarea class="fi" id="answer" rows="2" placeholder="Your answer to the card's core question."></textarea>
+    </div>
+    <div class="field-row">
+      <span class="fl">One small move you chose</span>
+      <input class="fi" type="text" id="move" placeholder="e.g. Send the draft version by end of day.">
+    </div>
+    <div class="field-row">
+      <span class="fl">Done for now — when is this complete enough?</span>
+      <input class="fi" type="text" id="doneState" placeholder="e.g. When I send it. Then I close the tab.">
+    </div>
+  </div>
+
+  <!-- Scores -->
+  <div class="form-block">
+    <div class="fb-title">Scores</div>
+    <div class="score-grid">
+      <div class="score-box">
+        <div class="sb-metric">Clarity</div>
+        <div class="sb-note">Could you understand what the card was asking?</div>
+        <div class="sb-range">
+          <span style="font-size:10px;color:var(--mist)">1</span>
+          <input class="score-input" type="range" min="1" max="5" value="3" id="clarity" oninput="updateScore('clarity')">
+          <span style="font-size:10px;color:var(--mist)">5</span>
+          <span class="score-val" id="clarity-val">3</span>
+        </div>
+        <div class="sb-target">Target: 4 or higher</div>
+      </div>
+      <div class="score-box">
+        <div class="sb-metric">Safety</div>
+        <div class="sb-note">Did the card avoid diagnosis or escalation framing?</div>
+        <div class="sb-range">
+          <span style="font-size:10px;color:var(--mist)">1</span>
+          <input class="score-input" type="range" min="1" max="5" value="3" id="safety" oninput="updateScore('safety')">
+          <span style="font-size:10px;color:var(--mist)">5</span>
+          <span class="score-val" id="safety-val">3</span>
+        </div>
+        <div class="sb-target">Target: 4 or higher</div>
+      </div>
+      <div class="score-box">
+        <div class="sb-metric">Actionability</div>
+        <div class="sb-note">Did the card create one doable next step?</div>
+        <div class="sb-range">
+          <span style="font-size:10px;color:var(--mist)">1</span>
+          <input class="score-input" type="range" min="1" max="5" value="3" id="action" oninput="updateScore('action')">
+          <span style="font-size:10px;color:var(--mist)">5</span>
+          <span class="score-val" id="action-val">3</span>
+        </div>
+        <div class="sb-target">Target: 4 or higher</div>
+      </div>
+      <div class="score-box load">
+        <div class="sb-metric">Cognitive Load</div>
+        <div class="sb-note">1 = light. 5 = too heavy. Lower is better.</div>
+        <div class="sb-range">
+          <span style="font-size:10px;color:var(--mist)">1</span>
+          <input class="score-input" type="range" min="1" max="5" value="3" id="load" oninput="updateScore('load')" style="accent-color:var(--amber);">
+          <span style="font-size:10px;color:var(--mist)">5</span>
+          <span class="score-val" id="load-val">3</span>
+        </div>
+        <div class="sb-target" style="color:var(--amber);">Target: 3 or lower</div>
+      </div>
+      <div class="score-box">
+        <div class="sb-metric">Portability</div>
+        <div class="sb-note">Could you use this card cold, without explanation?</div>
+        <div class="sb-range">
+          <span style="font-size:10px;color:var(--mist)">1</span>
+          <input class="score-input" type="range" min="1" max="5" value="3" id="portability" oninput="updateScore('portability')">
+          <span style="font-size:10px;color:var(--mist)">5</span>
+          <span class="score-val" id="portability-val">3</span>
+        </div>
+        <div class="sb-target">Target: 4 or higher</div>
+      </div>
+      <div class="score-box">
+        <div class="sb-metric">Done-State</div>
+        <div class="sb-note">Did you know when the session was complete enough?</div>
+        <div class="sb-range">
+          <span style="font-size:10px;color:var(--mist)">1</span>
+          <input class="score-input" type="range" min="1" max="5" value="3" id="doneScore" oninput="updateScore('doneScore')">
+          <span style="font-size:10px;color:var(--mist)">5</span>
+          <span class="score-val" id="doneScore-val">3</span>
+        </div>
+        <div class="sb-target">Target: 4 or higher</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback -->
+  <div class="form-block">
+    <div class="fb-title">Feedback</div>
+    <div class="field-row">
+      <span class="fl">What was confusing</span>
+      <textarea class="fi" id="confusion" rows="2" placeholder="Anything that didn't land, felt too abstract, or needed explanation."></textarea>
+    </div>
+    <div class="field-row">
+      <span class="fl">What made this easier</span>
+      <input class="fi" type="text" id="easier" placeholder="Language, layout, format, timing...">
+    </div>
+    <div class="field-row" style="margin-bottom:0;">
+      <span class="fl">What made this heavier</span>
+      <input class="fi" type="text" id="heavier" placeholder="Too many steps, too abstract, language that didn't track...">
+    </div>
+  </div>
+
+  <!-- Vault code -->
+  <div class="vault-note">
+    <p class="vn-text">Complete 3 or more sessions and receive a vault invite code. Enter your email to claim it after your third session.</p>
+    <div class="field-row" style="margin-bottom:0;">
+      <span class="fl">Email (optional — for vault access)</span>
+      <input class="fi" type="email" id="email" placeholder="your@email.com">
+    </div>
+  </div>
+
+  <button class="submit-btn" onclick="submitForm()">Seal this session →</button>
+
+  <div class="success-msg" id="successMsg">
+    <div class="sm-phrase">Zakhor. Your session is recorded.</div>
+    <div class="sm-sub">MIRROR™ · ELARRI.AI · Beta Test Kit V1</div>
+  </div>
+</div>
+
+<!-- ── PRODUCTION GATES ─────────────────────────────────────────────── -->
+<div class="page" id="gates">
+  <span class="page-kicker">Black Fairy · Card Production · Gate Status</span>
+  <h1 class="page-title">Production <span>Gates</span></h1>
+  <p class="page-sub">Five gates before the full deck ships. Current gate: 3 — 3-card layout sample. Gates 4 and 5 are locked until this passes.</p>
+
+  <div class="progress-wrap">
+    <span class="pw-label">Overall progress</span>
+    <div class="pw-bar"><div class="pw-fill" style="width:40%"></div></div>
+    <div class="pw-stats"><span>Gate 3 of 5 active</span><span>2 complete · 3 locked</span></div>
+  </div>
+
+  <div class="gates">
+
+    <div class="gate">
+      <div class="g-num">
+        <div class="g-circle done">✓</div>
+        <div class="g-line"></div>
+      </div>
+      <div class="g-body">
+        <span class="gb-tag done">Complete</span>
+        <div class="gb-title">Gate 1 — Beta Test Kit V1</div>
+        <p class="gb-desc">Structured beta instrument: 20-min session flow, safety insert, tester intake, one-pull form, six scoring metrics, facilitator script.</p>
+        <div class="gb-condition"><span class="pass">✓ BF_BetaTest_Kit_V1_2026-05-23</span></div>
+        <div class="gb-action"><a class="g-btn done" href="/beta-guide">View Guide</a></div>
+      </div>
+    </div>
+
+    <div class="gate">
+      <div class="g-num">
+        <div class="g-circle done">✓</div>
+        <div class="g-line"></div>
+      </div>
+      <div class="g-body">
+        <span class="gb-tag done">Complete</span>
+        <div class="gb-title">Gate 2 — SVG Sigil Kit V1</div>
+        <p class="gb-desc">12 sigils × 5 variants. Silver, gold, violet, print-white, print-black. Master kits. Sprite file. Manifest. Committed to ellari-archive.</p>
+        <div class="gb-condition"><span class="pass">✓ Commit 0439614 · TrueFormCoder/ellari-archive</span></div>
+        <div class="gb-action"><a class="g-btn done" href="#">View Kit</a></div>
+      </div>
+    </div>
+
+    <div class="gate">
+      <div class="g-num">
+        <div class="g-circle active">3</div>
+        <div class="g-line"></div>
+      </div>
+      <div class="g-body">
+        <span class="gb-tag active">Active — build now</span>
+        <div class="gb-title">Gate 3 — 4×6 Three-Card Layout Sample</div>
+        <p class="gb-desc">Flagship card, object card, and closure card at final 4×6 production spec. Art plate + overlay. No AI text in art. Manual text layer only.</p>
+        <div class="gb-condition" style="margin-bottom:10px;">
+          <span class="pending">⬜ Mirror Audit (R.16) — flagship</span><br>
+          <span class="pending">⬜ DNA Flame (R.09) — object card</span><br>
+          <span class="pending">⬜ Done for Now — closure card</span>
+        </div>
+        <div style="font-family:'Space Mono',monospace;font-size:8px;color:var(--mist);letter-spacing:.1em;line-height:1.7;">
+          Spec: 4×6 in · 300 DPI · 1200×1800px min (2400×3600 preferred)<br>
+          Bleed: 0.125 in all sides · Safe zone: 0.25 in preferred<br>
+          Palette: deep black · violet core · silver metal — NO gold
+        </div>
+      </div>
+    </div>
+
+    <div class="gate">
+      <div class="g-num">
+        <div class="g-circle locked">4</div>
+        <div class="g-line"></div>
+      </div>
+      <div class="g-body">
+        <span class="gb-tag locked">Locked — requires Gate 3</span>
+        <div class="gb-title">Gate 4 — 10-Reader Proof Pass</div>
+        <p class="gb-desc">Ten real readers complete the three-card sample. Pass standard: Clarity 8+/10, Safety 9+/10, Actionability 8+/10, Confusion below 3/10.</p>
+        <div class="gb-condition">
+          <span class="locked">🔒 Locked until Gate 3 sample exists</span><br>
+          <span class="locked">🔒 Minimum 3 tests per card before scores are valid</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="gate">
+      <div class="g-num">
+        <div class="g-circle locked">5</div>
+      </div>
+      <div class="g-body">
+        <span class="gb-tag locked">Locked — requires Gate 4</span>
+        <div class="gb-title">Gate 5 — Full 12-Card Proof PDF</div>
+        <p class="gb-desc">Complete print-ready PDF with all 12 cards at production spec. Bleed included. Text inside safe zone. Palette verified. No gold in Black Fairy files.</p>
+        <div class="gb-condition">
+          <span class="locked">🔒 Locked until Gate 4 passes at target scores</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function updateScore(id) {
+  const val = document.getElementById(id).value;
+  document.getElementById(id+'-val').textContent = val;
+}
+
+function submitForm() {
+  const card = document.getElementById('cardSelected').value;
+  if (!card) { alert('Please select a card.'); return; }
+
+  const data = {
+    testerId: document.getElementById('testerId').value || 'Anonymous',
+    card, scenario: document.getElementById('scenarioType').value,
+    completed: document.getElementById('completed').value,
+    fact: document.getElementById('fact').value,
+    answer: document.getElementById('answer').value,
+    move: document.getElementById('move').value,
+    doneState: document.getElementById('doneState').value,
+    scores: {
+      clarity: document.getElementById('clarity').value,
+      safety: document.getElementById('safety').value,
+      action: document.getElementById('action').value,
+      load: document.getElementById('load').value,
+      portability: document.getElementById('portability').value,
+      doneScore: document.getElementById('doneScore').value,
+    },
+    confusion: document.getElementById('confusion').value,
+    easier: document.getElementById('easier').value,
+    heavier: document.getElementById('heavier').value,
+    email: document.getElementById('email').value,
+    timestamp: new Date().toISOString(),
+  };
+
+  // V1: store to localStorage + show success
+  // V2: POST to Google Forms or Airtable endpoint
+  try {
+    const existing = JSON.parse(localStorage.getItem('bf-beta-submissions') || '[]');
+    existing.push(data);
+    localStorage.setItem('bf-beta-submissions', JSON.stringify(existing));
+  } catch(e) {}
+
+  document.getElementById('successMsg').classList.add('show');
+  document.querySelector('.submit-btn').textContent = 'Session sealed ✓';
+  document.querySelector('.submit-btn').style.borderColor = 'rgba(64,160,96,.4)';
+  document.querySelector('.submit-btn').style.color = 'var(--green2)';
+  document.querySelector('.submit-btn').disabled = true;
+}
+</script>
+</body>
+</html>
