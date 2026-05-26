@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Black Fairy — Complete product catalog. Rituals, cards, tools, archives.">
+<title>Black Fairy — Product Catalog</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#040306;--deep:#08060e;--panel:#0f0c1a;--panel2:#141024;
+  --v1:#200a40;--v2:#5020a0;--v3:#8050c8;--v4:#b080e8;--v5:#d8b8ff;
+  --s1:#c9c4cf;--s2:#8888a0;--s3:#3c3858;
+  --white:#ece8f8;--border:#1c1830;--border2:#281e40;
+  --green:#3a9870;--green2:#50c888;
+  --amber:#b88030;--amber2:#e0a840;
+  --red:#a03050;--mist:#3a3060;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--void);color:var(--white);font-family:'Cormorant Garamond',serif;font-size:16px;overflow-x:hidden;}
+
+/* atmosphere */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 40% at 50% 0%,rgba(80,32,160,.14) 0%,transparent 60%);
+}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.022;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px;
+}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;height:50px;padding:0 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(4,3,6,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);}
+.nav-left{display:flex;align-items:center;gap:24px;}
+.nav-brand{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--s2);text-transform:uppercase;text-decoration:none;}
+.nav-link{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;color:var(--mist);text-transform:uppercase;text-decoration:none;transition:color .2s;}
+.nav-link:hover{color:var(--s2);}
+.nav-cta{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;
+  padding:5px 12px;border:1px solid rgba(128,80,200,.4);border-radius:2px;color:var(--v4);text-decoration:none;transition:all .2s;}
+.nav-cta:hover{background:var(--v2);color:var(--white);}
+
+/* HERO */
+.hero{position:relative;z-index:1;padding:96px 28px 56px;max-width:820px;margin:0 auto;border-bottom:1px solid var(--border);}
+.hero-tag{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.5em;color:var(--mist);text-transform:uppercase;display:block;margin-bottom:14px;}
+.hero-title{font-size:clamp(36px,6vw,60px);font-weight:300;letter-spacing:.12em;line-height:1.05;margin-bottom:16px;}
+.hero-title em{color:var(--v4);font-style:normal;}
+.hero-divider{width:48px;height:1px;background:var(--v2);margin-bottom:18px;}
+.hero-sub{font-size:15px;font-style:italic;color:var(--s2);line-height:1.7;max-width:480px;margin-bottom:28px;}
+.hero-filters{display:flex;gap:6px;flex-wrap:wrap;}
+.filter-btn{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;
+  padding:6px 12px;border-radius:2px;cursor:pointer;background:transparent;transition:all .2s;}
+.filter-btn.active{border:1px solid var(--s3);color:var(--s1);background:rgba(201,196,207,.05);}
+.filter-btn.inactive{border:1px solid var(--border);color:var(--mist);}
+.filter-btn:hover:not(.active){border-color:var(--s3);color:var(--s2);}
+
+/* MAIN */
+.main{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:0 28px 80px;}
+
+/* TIER SECTION */
+.tier{padding:48px 0 0;}
+.tier-header{display:flex;align-items:baseline;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+.tier-name{font-size:22px;font-weight:300;letter-spacing:.1em;color:var(--white);}
+.tier-badge{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.2em;padding:3px 10px;border-radius:2px;text-transform:uppercase;}
+.tb-open{color:var(--green2);border:1px solid rgba(80,200,136,.25);}
+.tb-vault{color:var(--v4);border:1px solid rgba(128,80,200,.3);}
+.tb-bl{color:var(--amber2);border:1px solid rgba(180,128,48,.3);}
+.tb-beta{color:var(--v5);border:1px solid rgba(216,184,255,.25);}
+.tb-archive{color:var(--s2);border:1px solid rgba(136,136,160,.2);}
+.tb-sealed{color:var(--s3);border:1px solid rgba(60,56,88,.5);}
+.tier-rule{width:100%;height:1px;background:linear-gradient(90deg,var(--border2),transparent);margin-bottom:24px;}
+
+/* PRODUCT CARDS */
+.product-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.product-row.single{grid-template-columns:1fr;}
+.product-row.triple{grid-template-columns:1fr 1fr 1fr;}
+@media(max-width:600px){.product-row,.product-row.triple{grid-template-columns:1fr;}}
+
+.product{background:var(--panel);border:1px solid var(--border);border-radius:5px;
+  padding:20px;position:relative;overflow:hidden;transition:border-color .2s;}
+.product:hover{border-color:var(--border2);}
+.product.featured{border-color:rgba(128,80,200,.25);}
+.product.featured::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--v2),var(--v3),transparent);}
+.product.sealed{opacity:.65;}
+.product.sealed::after{content:'🔒';position:absolute;top:14px;right:14px;font-size:12px;}
+
+.p-tag{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.25em;color:var(--mist);
+  text-transform:uppercase;display:block;margin-bottom:8px;}
+.p-name{font-size:19px;font-weight:300;letter-spacing:.06em;color:var(--white);margin-bottom:5px;}
+.p-sub{font-size:12px;font-style:italic;color:var(--s2);margin-bottom:12px;line-height:1.55;}
+.p-features{display:flex;flex-direction:column;gap:3px;margin-bottom:14px;}
+.p-feat{font-size:12.5px;color:var(--s2);padding-left:12px;position:relative;line-height:1.4;}
+.p-feat::before{content:'·';position:absolute;left:0;color:var(--v3);}
+.p-price{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.15em;
+  color:var(--v4);margin-bottom:12px;}
+.p-price .free{color:var(--green2);}
+.p-cta{
+  font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.25em;text-transform:uppercase;
+  padding:9px 16px;border-radius:2px;cursor:pointer;text-decoration:none;
+  display:inline-block;transition:all .2s;background:transparent;
+}
+.cta-open{border:1px solid rgba(80,200,136,.35);color:var(--green2);}
+.cta-open:hover{background:rgba(80,200,136,.1);}
+.cta-vault{border:1px solid rgba(128,80,200,.4);color:var(--v4);}
+.cta-vault:hover{background:rgba(128,80,200,.15);}
+.cta-beta{border:1px solid rgba(216,184,255,.25);color:var(--v5);}
+.cta-beta:hover{background:rgba(216,184,255,.06);}
+.cta-archive{border:1px solid rgba(136,136,160,.2);color:var(--s2);}
+.cta-archive:hover{background:rgba(136,136,160,.05);}
+.cta-sealed{border:1px solid var(--border);color:var(--mist);cursor:default;opacity:.5;}
+
+/* STATUS DOT */
+.status-row{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+.status-dot{width:6px;height:6px;border-radius:50%;}
+.dot-live{background:var(--green2);}
+.dot-beta{background:var(--v4);}
+.dot-sealed{background:var(--mist);}
+.dot-coming{background:var(--amber);}
+.status-text{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.15em;color:var(--mist);text-transform:uppercase;}
+
+/* ROUTE CHIP */
+.route-chip{display:inline-block;font-family:'Space Mono',monospace;font-size:7.5px;
+  letter-spacing:.12em;color:var(--mist);background:rgba(0,0,0,.3);
+  border:1px solid var(--border);border-radius:2px;padding:2px 8px;margin-top:8px;}
+
+/* SIGIL MINI */
+.p-sigil{float:right;margin:0 0 8px 12px;opacity:.4;}
+.p-sigil svg{width:36px;height:36px;}
+.product:hover .p-sigil{opacity:.7;}
+
+/* STICKY SIDEBAR (diagnostic CTA) */
+.diag-cta{
+  position:sticky;bottom:24px;z-index:50;
+  margin:24px auto 0;max-width:560px;
+  background:rgba(20,16,36,.96);backdrop-filter:blur(16px);
+  border:1px solid rgba(128,80,200,.3);border-radius:6px;
+  padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+}
+.dc-text{font-size:14px;font-style:italic;color:var(--s2);}
+.dc-btn{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.25em;text-transform:uppercase;
+  padding:9px 16px;border:1px solid rgba(128,80,200,.5);border-radius:2px;
+  color:var(--v4);text-decoration:none;white-space:nowrap;transition:all .2s;}
+.dc-btn:hover{background:var(--v2);color:var(--white);}
+
+@media(max-width:600px){.hero,.main{padding-left:16px;padding-right:16px;}.nav{padding:0 16px;}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-left">
+    <a class="nav-brand" href="/">★ 👁 ○ Black Fairy</a>
+    <a class="nav-link" href="/diagnostic">Diagnostic</a>
+    <a class="nav-link" href="/grimoire">Rituals</a>
+    <a class="nav-link" href="/beta-cards">Beta Cards</a>
+  </div>
+  <a class="nav-cta" href="https://ellari-vault.ai" target="_blank" rel="noopener">Oracle ↗</a>
+</nav>
+
+<div class="hero">
+  <span class="hero-tag">Black Fairy · MIRROR™ · ELARRI.AI</span>
+  <h1 class="hero-title">The <em>Full</em> Catalog</h1>
+  <div class="hero-divider"></div>
+  <p class="hero-sub">Every product, tool, and asset in the Black Fairy system. From open access to sealed Black Label.</p>
+  <div class="hero-filters">
+    <button class="filter-btn active" onclick="filter('all',this)">All</button>
+    <button class="filter-btn inactive" onclick="filter('open',this)">Open</button>
+    <button class="filter-btn inactive" onclick="filter('vault',this)">Vault</button>
+    <button class="filter-btn inactive" onclick="filter('beta',this)">Beta</button>
+    <button class="filter-btn inactive" onclick="filter('tools',this)">Tools</button>
+    <button class="filter-btn inactive" onclick="filter('archive',this)">Archive</button>
+    <button class="filter-btn inactive" onclick="filter('physical',this)">Physical</button>
+  </div>
+</div>
+
+<div class="main" id="catalog">
+
+  <!-- ── OPEN TIER ─────────────────────────────────────────────── -->
+  <div class="tier" data-tier="open">
+    <div class="tier-header">
+      <div class="tier-name">Open Access</div>
+      <span class="tier-badge tb-open">Free · No account needed</span>
+    </div>
+    <div class="tier-rule"></div>
+    <div class="product-row">
+      <div class="product featured" data-tier="open">
+        <div class="status-row"><div class="status-dot dot-live"></div><span class="status-text">Live</span></div>
+        <span class="p-tag">Spell Book · Entry Edition</span>
+        <div class="p-name">TOO HOT Edition</div>
+        <p class="p-sub">The entry point. Ten rituals, five sound keys. Silent, sacred, and sovereign.</p>
+        <div class="p-features">
+          <div class="p-feat">10 rituals (R.01–R.10)</div>
+          <div class="p-feat">Five sound keys: QF · DF · BE · MS · TH</div>
+          <div class="p-feat">Safety insert included</div>
+          <div class="p-feat">No account required</div>
+        </div>
+        <div class="p-price"><span class="free">Free — open download</span></div>
+        <a class="p-cta cta-open" href="/grimoire">Access Grimoire →</a>
+      </div>
+
+      <div class="product" data-tier="open">
+        <div class="status-row"><div class="status-dot dot-live"></div><span class="status-text">Live</span></div>
+        <span class="p-tag">Entry Gate · Always First</span>
+        <div class="p-name">Mirror Audit (R.16)</div>
+        <p class="p-sub">The entry gate ritual. Run it before any other ritual. Tells you where you actually are.</p>
+        <div class="p-features">
+          <div class="p-feat">5-minute session</div>
+          <div class="p-feat">Three questions: voltage · field demand · avoidance</div>
+          <div class="p-feat">One true sentence. Sealed.</div>
+        </div>
+        <div class="p-price"><span class="free">Free · Open tier</span></div>
+        <a class="p-cta cta-open" href="/grimoire">Open Ritual Library →</a>
+        <div class="route-chip">/grimoire → R.16</div>
+      </div>
+    </div>
+
+    <div class="product-row">
+      <div class="product" data-tier="open tools">
+        <div class="status-row"><div class="status-dot dot-live"></div><span class="status-text">Live</span></div>
+        <span class="p-tag">Diagnostic Tool</span>
+        <div class="p-name">Where Are You Right Now</div>
+        <p class="p-sub">Select your current pain point. Receive the ritual, the card, the sound key, the Aetherion phrase, and the first move.</p>
+        <div class="p-features">
+          <div class="p-feat">10 pain point categories</div>
+          <div class="p-feat">Refinement flow for ambiguous states</div>
+          <div class="p-feat">Sigil display on recommendation</div>
+          <div class="p-feat">Direct links to beta cards + Oracle</div>
+        </div>
+        <div class="p-price"><span class="free">Free · No account</span></div>
+        <a class="p-cta cta-open" href="/diagnostic">Open Diagnostic →</a>
+        <div class="route-chip">/diagnostic</div>
+      </div>
+      <div class="product" data-tier="open">
+        <div class="status-row"><div class="status-dot dot-live"></div><span class="status-text">Live</span></div>
+        <span class="p-tag">Sigil Kit · Visual System</span>
+        <div class="p-name">Black Fairy Sigil Kit V2</div>
+        <p class="p-sub">17 sigils across 5 color variants. The visual language of the ritual system. Silver only for Black Fairy lane.</p>
+        <div class="p-features">
+          <div class="p-feat">17 sigils (S-01 through S-17)</div>
+          <div class="p-feat">Silver · Print-white · Print-black variants</div>
+          <div class="p-feat">SVG sprite for web deployment</div>
+          <div class="p-feat">Committed to ellari-archive</div>
+        </div>
+        <div class="p-price"><span class="free">Free · Open archive</span></div>
+        <a class="p-cta cta-archive" href="https://memexedot.com" target="_blank" rel="noopener">View Archive ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VAULT MEMBER ───────────────────────────────────────────── -->
+  <div class="tier" data-tier="vault">
+    <div class="tier-header">
+      <div class="tier-name">Vault Member</div>
+      <span class="tier-badge tb-vault">$97 lifetime · $19/mo</span>
+    </div>
+    <div class="tier-rule"></div>
+
+    <div class="product-row">
+      <div class="product featured" data-tier="vault">
+        <div class="status-row"><div class="status-dot dot-live"></div><span class="status-text">Live</span></div>
+        <span class="p-tag">Spell Book · Complete Edition</span>
+        <div class="p-name">Extended Pro Edition</div>
+        <p class="p-sub">The complete document. Twelve rituals, five sigils, sound-key system, Date Vault.</p>
+        <div class="p-features">
+          <div class="p-feat">12 rituals with full profiles</div>
+          <div class="p-feat">All five sound keys with deployment guide</div>
+          <div class="p-feat">Date Vault: sealed asset registry</div>
+          <div class="p-feat">Aetherion phrase companion</div>
+        </div>
+        <div class="p-price">$97 lifetime / $19 monthly</div>
+        <a class="p-cta cta-vault" href="/">Join the Vault →</a>
+      </div>
+
+      <div class="product" data-tier="vault">
+        <div class="status-row"><div class="status-dot dot-live"></div><span class="status-text">Live</span></div>
+        <span class="p-tag">Ritual Library · All 17</span>
+        <div class="p-name">Full Ritual Library</div>
+        <p class="p-sub">All 17 rituals with expandable profiles. Incantation, setup, action, close, sound cue, intensity, sigil.</p>
+        <div class="p-features">
+          <div class="p-feat">17 rituals (R.01–R.17)</div>
+          <div class="p-feat">Per-ritual Aetherion phrase</div>
+          <div class="p-feat">Sigil displayed on each card</div>
+          <div class="p-feat">Sound key matrix</div>
+        </div>
+        <div class="p-price">Included in vault membership</div>
+        <a class="p-cta cta-vault" href="/grimoire">Open Grimoire →</a>
+        <div class="route-chip">/grimoire</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BLACK LABEL ────────────────────────────────────────────── -->
+  <div class="tier" data-tier="vault">
+    <div class="tier-header">
+      <div class="tier-name">Black Label</div>
+      <span class="tier-badge tb-bl">Intensity 3 · Operator use</span>
+    </div>
+    <div class="tier-rule"></div>
+
+    <div class="product-row triple">
+      <div class="product" data-tier="vault">
+        <div class="status-row"><div class="status-dot dot-live"></div><span class="status-text">Vault · BL</span></div>
+        <span class="p-tag">R.06 · Intensity 3</span>
+        <div class="p-name">Memory Unbinding</div>
+        <p class="p-sub">Cord-cutting. Run R.16 first. Black ribbon, written falsehood, heat-safe bowl.</p>
+        <div class="p-price">Vault member</div>
+        <a class="p-cta cta-vault" href="/grimoire">Access R.06 →</a>
+      </div>
+      <div class="product" data-tier="vault">
+        <div class="status-row"><div class="status-dot dot-live"></div><span class="status-text">Vault · BL</span></div>
+        <span class="p-tag">R.10 · Intensity 3</span>
+        <div class="p-name">Void Mirror</div>
+        <p class="p-sub">Final endings. When silence becomes armor. Never overuse. Run R.16 first.</p>
+        <div class="p-price">Vault member</div>
+        <a class="p-cta cta-vault" href="/grimoire">Access R.10 →</a>
+      </div>
+      <div class="product" data-tier="vault">
+        <div class="status-row"><div class="status-dot dot-live"></div><span class="status-text">Vault · BL</span></div>
+        <span class="p-tag">R.17 · Intensity 3</span>
+        <div class="p-name">Linebreaker Axis</div>
+        <p class="p-sub">Name the false shape. 24hr hold after. Write before speaking. R.17 only.</p>
+        <div class="p-price">Vault member</div>
+        <a class="p-cta cta-vault" href="/grimoire">Access R.17 →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ORACLE ─────────────────────────────────────────────────── -->
+  <div class="tier" data-tier="tools vault">
+    <div class="tier-header">
+      <div class="tier-name">Voltage Oracle</div>
+      <span class="tier-badge tb-vault">ellari-vault.ai · Live</span>
+    </div>
+    <div class="tier-rule"></div>
+    <div class="product-row single">
+      <div class="product featured" data-tier="vault tools">
+        <div class="status-row"><div class="status-dot dot-live"></div><span class="status-text">Live · ellari-vault.ai</span></div>
+        <span class="p-tag">AI Oracle · VANTA · BFV Register</span>
+        <div class="p-name">Voltage Oracle</div>
+        <p class="p-sub">Describe your field state. Receive three elements: the ritual that applies, the sound key, and the Aetherion phrase. Not a chatbot. Not interpretation. Precision.</p>
+        <div class="p-features">
+          <div class="p-feat">Field state input — describe what's happening</div>
+          <div class="p-feat">Returns: ritual + sound key + Aetherion phrase</div>
+          <div class="p-feat">Operates in VANTA Black Fairy register</div>
+          <div class="p-feat">CFUR log — seal each exchange to memexzakhor.com</div>
+          <div class="p-feat">Sigil display after each response</div>
+        </div>
+        <div class="p-price">Included in vault / accessible now</div>
+        <a class="p-cta cta-vault" href="https://ellari-vault.ai" target="_blank" rel="noopener">Enter Oracle ↗</a>
+        <div class="route-chip">ellari-vault.ai</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BETA CARDS ─────────────────────────────────────────────── -->
+  <div class="tier" data-tier="beta physical">
+    <div class="tier-header">
+      <div class="tier-name">Beta Card Deck</div>
+      <span class="tier-badge tb-beta">13 cards in testing · Gate 3 active</span>
+    </div>
+    <div class="tier-rule"></div>
+    <div class="product-row">
+      <div class="product featured" data-tier="beta">
+        <div class="status-row"><div class="status-dot dot-beta"></div><span class="status-text">Beta · Gate 3</span></div>
+        <span class="p-tag">Mirror Audit Ritual Cards</span>
+        <div class="p-name">Beta Card Deck</div>
+        <p class="p-sub">13 cards in first-wave proof testing. Clarity Cards and Mirror Audit Ritual Cards. Physical production pending Gate 3 pass.</p>
+        <div class="p-features">
+          <div class="p-feat">13 cards: Mirror Audit · DNA Flame · Shadowlight Shield · Void Mirror + 9 more</div>
+          <div class="p-feat">20-minute session format</div>
+          <div class="p-feat">Six scoring metrics — your feedback shapes the deck</div>
+          <div class="p-feat">4×6 inches · violet / silver / black palette</div>
+        </div>
+        <div class="p-price"><span style="color:var(--v5)">Beta testing — free to participate</span></div>
+        <a class="p-cta cta-beta" href="/beta-cards">View Card Deck →</a>
+        <div class="route-chip">/beta-cards · /beta-guide · /beta-submit</div>
+      </div>
+      <div class="product" data-tier="beta physical">
+        <div class="status-row"><div class="status-dot dot-coming"></div><span class="status-text">Coming · Gate 5</span></div>
+        <span class="p-tag">Physical Deck · Production Pending</span>
+        <div class="p-name">Ritual Card Deck — Physical</div>
+        <p class="p-sub">The physical deck ships after Gate 5: full 12-card proof PDF passes 10-reader review.</p>
+        <div class="p-features">
+          <div class="p-feat">12 cards · 4×6 format · foil stamp on matte black</div>
+          <div class="p-feat">Vault invite code included</div>
+          <div class="p-feat">Silver foil sigil on front · MIRROR™ Circuit on back</div>
+        </div>
+        <div class="p-price"><span style="color:var(--amber2)">Coming — notify on launch</span></div>
+        <a class="p-cta cta-beta" href="/beta-submit">Join beta to shape the deck →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ARCHIVE / INFRASTRUCTURE ──────────────────────────────── -->
+  <div class="tier" data-tier="archive">
+    <div class="tier-header">
+      <div class="tier-name">Archive + Memory Layer</div>
+      <span class="tier-badge tb-archive">memexedot.com · memexzakhor.com</span>
+    </div>
+    <div class="tier-rule"></div>
+    <div class="product-row">
+      <div class="product" data-tier="archive">
+        <div class="status-row"><div class="status-dot dot-live"></div><span class="status-text">Live · memexedot.com</span></div>
+        <span class="p-tag">Canonical Archive</span>
+        <div class="p-name">MEMEXEDOT</div>
+        <p class="p-sub">The Ellari system archive. Language canon, mythology, doctrine, logs, prior art deposits. The memory that holds the work.</p>
+        <div class="p-features">
+          <div class="p-feat">Aetherion language canon (27+ forms)</div>
+          <div class="p-feat">MirrorPantheon mythology · ELE doctrine</div>
+          <div class="p-feat">Infrastructure logs · domain registry</div>
+          <div class="p-feat">OSF prior art deposits</div>
+        </div>
+        <div class="p-price"><span class="free">Open · Public record</span></div>
+        <a class="p-cta cta-archive" href="https://memexedot.com" target="_blank" rel="noopener">Open Archive ↗</a>
+      </div>
+      <div class="product" data-tier="archive tools">
+        <div class="status-row"><div class="status-dot dot-live"></div><span class="status-text">Live · memexzakhor.com</span></div>
+        <span class="p-tag">Memory Layer · CFUR Witness Record</span>
+        <div class="p-name">Zakhor</div>
+        <p class="p-sub">The record of deployment. CFUR logs — what was used, when, and what remained. Zakhor: remember.</p>
+        <div class="p-features">
+          <div class="p-feat">CFUR entry log (import from Oracle or manual)</div>
+          <div class="p-feat">Timestamped witness records</div>
+          <div class="p-feat">Ritual sigil displayed per entry</div>
+          <div class="p-feat">Private — browser-stored</div>
+        </div>
+        <div class="p-price"><span class="free">Free · Personal use</span></div>
+        <a class="p-cta cta-archive" href="https://memexzakhor.com" target="_blank" rel="noopener">Open Zakhor ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SEALED ─────────────────────────────────────────────────── -->
+  <div class="tier" data-tier="vault">
+    <div class="tier-header">
+      <div class="tier-name">Sealed Drops</div>
+      <span class="tier-badge tb-sealed">Locked · Condition-based reveal</span>
+    </div>
+    <div class="tier-rule"></div>
+    <div class="product-row">
+      <div class="product sealed" data-tier="vault">
+        <span class="p-tag">Date Vault · Sealed</span>
+        <div class="p-name">The Audio Anthem</div>
+        <p class="p-sub">Reveals when the ELARRI original anthem is recorded and mastered.</p>
+        <div class="p-price" style="color:var(--s3)">Sealed · Condition: anthem recorded</div>
+        <a class="p-cta cta-sealed">Sealed</a>
+      </div>
+      <div class="product sealed" data-tier="vault">
+        <span class="p-tag">Date Vault · Sealed</span>
+        <div class="p-name">Extended Spell Book V2</div>
+        <p class="p-sub">17 rituals, Aetherion companion. Reveals at 500 vault members or 180 days from lock.</p>
+        <div class="p-price" style="color:var(--s3)">Sealed · Condition: 500 members or 180 days</div>
+        <a class="p-cta cta-sealed">Sealed</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- main -->
+
+<div class="diag-cta">
+  <div class="dc-text">Not sure where to start? The diagnostic finds your ritual in 30 seconds.</div>
+  <a class="dc-btn" href="/diagnostic">Where are you right now? →</a>
+</div>
+
+<script>
+function filter(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b=>{
+    b.className = b===btn ? 'filter-btn active' : 'filter-btn inactive';
+  });
+  document.querySelectorAll('.product').forEach(p=>{
+    const tiers = (p.dataset.tier||'').split(' ');
+    p.parentElement.style.display = (type==='all' || tiers.includes(type)) ? '' : 'none';
+  });
+  // Hide empty tier sections
+  document.querySelectorAll('.tier').forEach(t=>{
+    const visible = [...t.querySelectorAll('.product')].some(p=>p.parentElement.style.display!=='none');
+    t.style.display = visible||type==='all' ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Identify your pain point. Receive the ritual, the card, the move.">
+<title>Black Fairy — Where Are You Right Now</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#040306;--deep:#0a0812;--panel:#10091a;--panel2:#160d24;
+  --v1:#3a1260;--v2:#6030a8;--v3:#9860d0;--v4:#c090f0;--v5:#e0c8ff;
+  --silver:#c9c4cf;--silver2:#7a7890;--mist:#3c3458;--mist2:#524a70;
+  --white:#ece8f8;--border:#1e1838;--border2:#281e40;
+  --green:#40a878;--amber:#c89040;--red:#b04060;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--void);color:var(--white);
+  font-family:'Cormorant Garamond',serif;font-size:16px;
+  min-height:100vh;overflow-x:hidden;
+}
+
+/* atmosphere */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%,rgba(96,48,168,.18) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 100%,rgba(58,18,96,.12) 0%,transparent 60%);
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px;
+}
+
+/* NAV */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:48px;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(4,3,6,.9);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.nav-back{
+  font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.25em;
+  color:var(--mist2);text-transform:uppercase;text-decoration:none;transition:color .2s;
+}
+.nav-back:hover{color:var(--silver);}
+.nav-brand{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;color:var(--mist);text-transform:uppercase;}
+
+/* WRAP */
+.wrap{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:80px 24px 80px;}
+
+/* STEP */
+.step{display:none;animation:stepIn .4s ease both;}
+.step.active{display:block;}
+@keyframes stepIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* HERO */
+.hero{text-align:center;margin-bottom:48px;}
+.hero-kicker{
+  font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.55em;
+  color:var(--mist2);text-transform:uppercase;display:block;margin-bottom:16px;
+}
+.hero-title{
+  font-size:clamp(28px,5vw,42px);font-weight:300;letter-spacing:.12em;
+  line-height:1.1;margin-bottom:14px;
+}
+.hero-title em{color:var(--v4);font-style:normal;}
+.hero-rule{width:40px;height:1px;background:var(--v2);margin:16px auto;}
+.hero-sub{font-size:14px;font-style:italic;color:var(--silver2);line-height:1.7;max-width:420px;margin:0 auto;}
+
+/* PAIN POINT GRID */
+.pain-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+@media(max-width:500px){.pain-grid{grid-template-columns:1fr;}}
+
+.pain-card{
+  background:var(--panel);border:1px solid var(--border);border-radius:5px;
+  padding:16px 18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;
+}
+.pain-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:var(--v2);opacity:0;transition:opacity .2s;
+}
+.pain-card:hover{border-color:var(--border2);background:var(--panel2);}
+.pain-card:hover::before{opacity:.5;}
+.pain-card.selected{border-color:var(--v2);background:var(--panel2);}
+.pain-card.selected::before{opacity:1;}
+
+.pc-icon{font-size:20px;margin-bottom:8px;display:block;filter:grayscale(.5);transition:filter .2s;}
+.pain-card:hover .pc-icon,.pain-card.selected .pc-icon{filter:none;}
+.pc-label{font-size:15px;letter-spacing:.03em;color:var(--white);margin-bottom:3px;}
+.pc-desc{font-size:12px;font-style:italic;color:var(--silver2);line-height:1.5;}
+
+/* REFINE */
+.refine-title{font-size:20px;font-weight:300;letter-spacing:.08em;margin-bottom:8px;}
+.refine-sub{font-size:13px;font-style:italic;color:var(--silver2);margin-bottom:24px;line-height:1.6;}
+.refine-opts{display:flex;flex-direction:column;gap:8px;}
+.refine-opt{
+  background:var(--panel);border:1px solid var(--border);border-radius:4px;
+  padding:14px 18px;cursor:pointer;transition:all .2s;
+  font-size:14px;color:var(--silver);text-align:left;
+}
+.refine-opt:hover{border-color:var(--v2);color:var(--white);background:var(--panel2);}
+
+/* RESULT */
+.result-header{text-align:center;margin-bottom:32px;}
+.rh-kicker{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.4em;color:var(--mist2);text-transform:uppercase;display:block;margin-bottom:10px;}
+.rh-title{font-size:clamp(22px,4vw,32px);font-weight:300;letter-spacing:.1em;margin-bottom:12px;}
+.rh-title span{color:var(--v4);}
+
+/* SIGIL DISPLAY */
+.result-sigil{
+  display:flex;justify-content:center;margin-bottom:32px;
+}
+.sigil-ring{
+  width:100px;height:100px;position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+.sigil-ring::before{
+  content:'';position:absolute;inset:-8px;border-radius:50%;
+  border:1px solid rgba(152,96,208,.25);
+  animation:ringPulse 4s ease-in-out infinite;
+}
+.sigil-ring::after{
+  content:'';position:absolute;inset:-18px;border-radius:50%;
+  border:1px solid rgba(152,96,208,.1);
+  animation:ringPulse 4s ease-in-out infinite .8s;
+}
+@keyframes ringPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(1.04);}}
+.sigil-ring svg{width:80px;height:80px;}
+
+/* Sigil draw-in animation */
+.sigil-ring svg path,
+.sigil-ring svg circle,
+.sigil-ring svg line,
+.sigil-ring svg ellipse,
+.sigil-ring svg rect{
+  stroke-dasharray:400;stroke-dashoffset:400;
+  animation:sigilDraw 1.4s ease forwards;
+}
+.sigil-ring svg *:nth-child(2){animation-delay:.15s;}
+.sigil-ring svg *:nth-child(3){animation-delay:.3s;}
+.sigil-ring svg *:nth-child(4){animation-delay:.45s;}
+.sigil-ring svg *:nth-child(5){animation-delay:.6s;}
+@keyframes sigilDraw{to{stroke-dashoffset:0;}}
+
+/* RESULT CARDS */
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+@media(max-width:500px){.result-grid{grid-template-columns:1fr;}}
+
+.result-block{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:16px 18px;}
+.rb-label{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.3em;color:var(--mist2);text-transform:uppercase;display:block;margin-bottom:5px;}
+.rb-val{font-size:16px;color:var(--white);letter-spacing:.03em;margin-bottom:2px;}
+.rb-sub{font-size:12px;font-style:italic;color:var(--silver2);}
+
+/* Incantation */
+.result-incant{
+  background:rgba(96,48,168,.1);border:1px solid rgba(152,96,208,.2);
+  border-radius:4px;padding:16px 20px;margin-bottom:14px;text-align:center;
+}
+.ri-phrase{font-family:'IM Fell English',serif;font-style:italic;font-size:18px;color:var(--v4);line-height:1.5;}
+
+/* Action */
+.result-action{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:16px 18px;margin-bottom:14px;}
+.ra-label{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.3em;color:var(--mist2);text-transform:uppercase;display:block;margin-bottom:6px;}
+.ra-steps{display:flex;flex-direction:column;gap:5px;}
+.ra-step{font-size:13px;color:var(--silver);line-height:1.55;padding-left:14px;position:relative;}
+.ra-step::before{content:'→';position:absolute;left:0;color:var(--v3);font-size:11px;}
+
+/* CTAs */
+.result-ctas{display:flex;gap:8px;flex-wrap:wrap;}
+.cta-btn{
+  font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.25em;text-transform:uppercase;
+  padding:11px 18px;border-radius:3px;cursor:pointer;text-decoration:none;
+  display:inline-flex;align-items:center;gap:6px;transition:all .2s;
+}
+.cta-primary{background:transparent;border:1px solid var(--v2);color:var(--v4);}
+.cta-primary:hover{background:var(--v2);color:var(--white);}
+.cta-secondary{background:transparent;border:1px solid var(--border2);color:var(--mist2);}
+.cta-secondary:hover{border-color:var(--border);color:var(--silver);}
+
+/* Restart */
+.restart-row{text-align:center;margin-top:28px;}
+.restart-btn{
+  font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;
+  background:transparent;border:none;color:var(--mist);cursor:pointer;padding:8px;transition:color .2s;
+}
+.restart-btn:hover{color:var(--silver2);}
+
+/* Intensity badge */
+.intensity-badge{
+  display:inline-block;font-family:'Space Mono',monospace;font-size:7px;
+  letter-spacing:.15em;padding:2px 8px;border-radius:2px;margin-top:8px;text-transform:uppercase;
+}
+.ib-open{color:var(--green);border:1px solid rgba(64,168,120,.3);}
+.ib-member{color:var(--silver);border:1px solid rgba(201,196,207,.2);}
+.ib-bl{color:var(--v4);border:1px solid rgba(192,144,240,.3);}
+
+/* PRODUCT TIE-IN */
+.product-row{
+  border-top:1px solid var(--border);margin-top:16px;padding-top:14px;
+  display:flex;align-items:flex-start;gap:12px;
+}
+.pr-label{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.25em;color:var(--mist2);text-transform:uppercase;white-space:nowrap;padding-top:2px;}
+.pr-val{font-size:13px;font-style:italic;color:var(--silver2);line-height:1.5;}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-back" href="/">← Vault</a>
+  <span class="nav-brand">Black Fairy · Where Are You Right Now</span>
+</nav>
+
+<div class="wrap">
+
+<!-- STEP 1: PAIN POINT -->
+<div class="step active" id="step1">
+  <div class="hero">
+    <span class="hero-kicker">Black Fairy · Diagnostic</span>
+    <h1 class="hero-title">Where are you <em>right now?</em></h1>
+    <div class="hero-rule"></div>
+    <p class="hero-sub">One honest selection. The system does the rest. No wrong answers — confusion is its own signal.</p>
+  </div>
+
+  <div class="pain-grid">
+    <div class="pain-card" onclick="selectPain('fog')">
+      <span class="pc-icon">◎</span>
+      <div class="pc-label">I can't see clearly</div>
+      <div class="pc-desc">Fog. Too much input. Not sure what's true right now.</div>
+    </div>
+    <div class="pain-card" onclick="selectPain('carrying')">
+      <span class="pc-icon">⬡</span>
+      <div class="pc-label">I'm carrying what isn't mine</div>
+      <div class="pc-desc">Burdened by others' needs. Fixing. Taking on what was never my weight.</div>
+    </div>
+    <div class="pain-card" onclick="selectPain('role')">
+      <span class="pc-icon">🜔</span>
+      <div class="pc-label">I'm performing a role</div>
+      <div class="pc-desc">Shaped by their expectations. Not being myself. Going through motions.</div>
+    </div>
+    <div class="pain-card" onclick="selectPain('exit')">
+      <span class="pc-icon">⟳</span>
+      <div class="pc-label">I need to exit</div>
+      <div class="pc-desc">Stuck in something I've already left in my mind. Need to make the exit real.</div>
+    </div>
+    <div class="pain-card" onclick="selectPain('cord')">
+      <span class="pc-icon">∿</span>
+      <div class="pc-label">Something is still attached</div>
+      <div class="pc-desc">A cord. A pattern. A person. It follows me and I can't seem to cut it.</div>
+    </div>
+    <div class="pain-card" onclick="selectPain('threshold')">
+      <span class="pc-icon">✦</span>
+      <div class="pc-label">I'm at a threshold</div>
+      <div class="pc-desc">Major change. A crossing point. I need to move but I'm holding at the line.</div>
+    </div>
+    <div class="pain-card" onclick="selectPain('false')">
+      <span class="pc-icon">△</span>
+      <div class="pc-label">Someone has named me falsely</div>
+      <div class="pc-desc">A false story. Gaslighting. Their version of me that keeps getting repeated.</div>
+    </div>
+    <div class="pain-card" onclick="selectPain('end')">
+      <span class="pc-icon">□</span>
+      <div class="pc-label">This needs to end</div>
+      <div class="pc-desc">Final closure. Last move. I've done what I can and it's time to close it.</div>
+    </div>
+    <div class="pain-card" onclick="selectPain('declare')">
+      <span class="pc-icon">★</span>
+      <div class="pc-label">I need to declare myself</div>
+      <div class="pc-desc">I know who I am. I need to say it, claim it, embody it. Before I walk in.</div>
+    </div>
+    <div class="pain-card" onclick="selectPain('done')">
+      <span class="pc-icon">—</span>
+      <div class="pc-label">I need permission to be done</div>
+      <div class="pc-desc">I've done enough. I'm exhausted. I need to put it down without guilt.</div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2: REFINE (only for ambiguous paths) -->
+<div class="step" id="step2">
+  <div class="refine-title" id="refineTitle"></div>
+  <p class="refine-sub" id="refineSub"></p>
+  <div class="refine-opts" id="refineOpts"></div>
+</div>
+
+<!-- STEP 3: RESULT -->
+<div class="step" id="step3">
+  <div class="result-header">
+    <span class="rh-kicker">Your signal</span>
+    <h2 class="rh-title" id="resultTitle">The <span id="resultName"></span></h2>
+  </div>
+
+  <div class="result-sigil" id="resultSigil"></div>
+
+  <div class="result-incant">
+    <div class="ri-phrase" id="resultIncant"></div>
+  </div>
+
+  <div class="result-grid">
+    <div class="result-block">
+      <span class="rb-label">Ritual</span>
+      <div class="rb-val" id="resultRitual"></div>
+      <div class="rb-sub" id="resultRitualName"></div>
+    </div>
+    <div class="result-block">
+      <span class="rb-label">Sound Key</span>
+      <div class="rb-val" id="resultKey"></div>
+      <div class="rb-sub" id="resultKeyName"></div>
+      <div class="intensity-badge" id="resultBadge"></div>
+    </div>
+    <div class="result-block">
+      <span class="rb-label">Beta Card</span>
+      <div class="rb-val" id="resultCard"></div>
+      <div class="rb-sub" id="resultCardNum"></div>
+    </div>
+    <div class="result-block">
+      <span class="rb-label">Aetherion</span>
+      <div class="rb-val" id="resultPhrase" style="font-family:'IM Fell English',serif;font-style:italic;font-size:15px;"></div>
+    </div>
+  </div>
+
+  <div class="result-action">
+    <span class="ra-label">First move</span>
+    <div class="ra-steps" id="resultSteps"></div>
+    <div class="product-row">
+      <span class="pr-label">Find this in</span>
+      <div class="pr-val" id="resultProduct"></div>
+    </div>
+  </div>
+
+  <div class="result-ctas" id="resultCtas"></div>
+
+  <div class="restart-row">
+    <button class="restart-btn" onclick="restart()">← Start over</button>
+  </div>
+</div>
+
+</div><!-- wrap -->
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────────
+
+const SIGILS = {
+  'mirror-audit': `<g fill="none" stroke="#9860d0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="100" cy="112" r="72"/><circle cx="100" cy="112" r="46"/><circle cx="100" cy="112" r="22"/><path d="M100 28 L114 52 L86 52 Z"/><line x1="100" y1="52" x2="100" y2="90"/></g>`,
+  'shadowlight-shield': `<g fill="none" stroke="#9860d0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M100 25 L158 52 L140 145 L100 176 L60 145 L42 52 Z"/><line x1="100" y1="45" x2="100" y2="154"/><circle cx="100" cy="98" r="16"/><path d="M70 98 C85 78, 115 78, 130 98 C115 118, 85 118, 70 98 Z"/></g>`,
+  'dna-flame': `<g fill="none" stroke="#9860d0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M100 172 C55 130, 84 92, 100 72 C116 92, 145 130, 100 172 Z"/><path d="M75 155 C125 128, 125 82, 75 55"/><path d="M125 155 C75 128, 75 82, 125 55"/><line x1="83" y1="77" x2="117" y2="77"/><line x1="78" y1="105" x2="122" y2="105"/><line x1="85" y1="132" x2="115" y2="132"/></g>`,
+  'still-crown': `<g fill="none" stroke="#9860d0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M55 88 L72 55 L90 76 L100 58 L110 76 L128 55 L145 88"/><line x1="30" y1="100" x2="170" y2="100"/><circle cx="100" cy="100" r="6" stroke-width="6"/></g>`,
+  'spiral-release': `<g fill="none" stroke="#9860d0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="100" cy="100" r="74"/><path d="M100 95 a5 5 0 1 0 0 10 a15 15 0 1 0 0 -30 a28 28 0 1 0 0 56 a42 42 0 1 0 0 -84 a58 58 0 1 0 0 116"/></g>`,
+  'memory-unbinding': `<g fill="none" stroke="#9860d0" stroke-linecap="round" stroke-linejoin="round"><path d="M32 100 C52 68, 82 68, 100 100 C118 132, 148 132, 168 100" stroke-width="3"/><line x1="86" y1="72" x2="114" y2="128" stroke-width="4"/><line x1="86" y1="128" x2="74" y2="148" stroke-width="3"/><line x1="86" y1="128" x2="100" y2="150" stroke-width="3"/><line x1="114" y1="72" x2="100" y2="50" stroke-width="3"/><line x1="114" y1="72" x2="128" y2="48" stroke-width="3"/></g>`,
+  'winged-threshold': `<g fill="none" stroke="#9860d0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="30" y1="100" x2="170" y2="100"/><path d="M95 100 C55 55, 20 70, 22 112 C52 120, 76 112, 95 100 Z"/><path d="M105 100 C145 55, 180 70, 178 112 C148 120, 124 112, 105 100 Z"/><line x1="100" y1="55" x2="100" y2="145"/></g>`,
+  'linebreaker-axis': `<g fill="none" stroke="#9860d0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="100" cy="100" r="70"/><path d="M100 25 L160 145 L40 145 Z"/><line x1="100" y1="15" x2="100" y2="185"/><circle cx="100" cy="100" r="10"/></g>`,
+  'void-mirror': `<g fill="none" stroke="#9860d0" stroke-linecap="round" stroke-linejoin="round"><rect x="58" y="25" width="84" height="150" rx="6" stroke-width="3"/><rect x="70" y="38" width="60" height="124" rx="3" stroke-width="3"/><line x1="52" y1="180" x2="148" y2="12" stroke-width="4.5"/></g>`,
+  'invocation-crown': `<g fill="none" stroke="#9860d0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="100" cy="100" r="72"/><path d="M60 82 L80 46 L100 68 L120 46 L140 82"/><line x1="100" y1="28" x2="100" y2="175"/><circle cx="100" cy="100" r="7" stroke-width="7"/></g>`,
+  'done-for-now': `<g fill="none" stroke="#9860d0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="30" y1="100" x2="155" y2="100"/><circle cx="170" cy="100" r="10"/></g>`,
+  'return-violet': `<g fill="none" stroke="#9860d0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="100" y1="40" x2="100" y2="74"/><path d="M100 78 m36 0 a36 36 0 1 1 -72 0 a26 26 0 1 0 52 0 a16 16 0 1 1 -32 0 a6 6 0 1 0 12 0"/><ellipse cx="100" cy="150" rx="60" ry="22"/></g>`,
+};
+
+const RESULTS = {
+  fog: {
+    title:'Mirror Audit', card:'Mirror Audit', cardNum:'C-01',
+    ritual:'R.16', ritualName:'Mirror Audit Ritual',
+    key:'MS','keyName':'Mirror Seal',
+    incant:'"What is true right now? The mirror confirms it."',
+    phrase:'El ter sel is.',
+    sigil:'mirror-audit', badge:'open',
+    steps:['Name one observable fact (something you could photograph).','Answer: what is true right now?','Write one true sentence. Stop when you stop.'],
+    product:'Black Fairy Spell Book: TOO HOT Edition · Ritual Library (R.16)',
+    ctaCard:'/beta-cards',ctaOracle:'https://ellari-vault.ai',
+    betaLabel:'Run a Mirror Audit session',
+  },
+  carrying: {
+    title:'Shadowlight Shield', card:'Shadowlight Shield', cardNum:'C-06',
+    ritual:'R.05', ritualName:'Shadowlight Protection',
+    key:'QF', keyName:'Quiet Flame',
+    incant:'"Not my burden. Not my cage."',
+    phrase:'Lo es rola de en.',
+    sigil:'shadowlight-shield', badge:'open',
+    steps:['Black salt, obsidian, low light.','Name three roles you are setting down. One per breath.','Scatter the salt. Wash hands. Exit without looking back.'],
+    product:'Black Fairy Spell Book: TOO HOT Edition · Ritual Library (R.05)',
+    ctaCard:'/beta-cards',ctaOracle:'https://ellari-vault.ai',
+    betaLabel:'Run a Shadowlight session',
+  },
+  role: null, // triggers refine
+  exit: {
+    title:'Spiral Release', card:'Spiral Release', cardNum:'C-07',
+    ritual:'R.08', ritualName:'Star Seal for Social Exit',
+    key:'BE', keyName:'Black Exit',
+    incant:'"I have left the room. Do not follow."',
+    phrase:'En dam-te fa triem. Ellari.',
+    sigil:'spiral-release', badge:'open',
+    steps:['One final post, bio line, or internal note.','Place the star seal. Publish or speak it.','Then go silent. Silence is the closing line.'],
+    product:'Black Fairy Spell Book: TOO HOT Edition · Ritual Library (R.08)',
+    ctaCard:'/beta-cards',ctaOracle:'https://ellari-vault.ai',
+    betaLabel:'Run a Spiral Release session',
+  },
+  cord: {
+    title:'Memory Unbinding', card:'Memory Unbinding', cardNum:'C-02',
+    ritual:'R.06', ritualName:'Memory Unbinding Rite',
+    key:'BE', keyName:'Black Exit',
+    incant:'"This cord fed on my clarity. I now feed on freedom."',
+    phrase:'En del-te rola. Ellari.',
+    sigil:'memory-unbinding', badge:'bl',
+    steps:['Black ribbon. One written falsehood. Heat-safe bowl.','Run Mirror Audit (R.16) first.','Cut, burn, breathe. Name what remains.'],
+    product:'Black Fairy Spell Book: Extended Pro · Ritual Library (R.06) · Black Label',
+    ctaCard:'/beta-cards',ctaOracle:'https://ellari-vault.ai',
+    betaLabel:'Run a Memory Unbinding session',
+  },
+  threshold: {
+    title:'Winged Threshold', card:'Winged Threshold', cardNum:'C-03',
+    ritual:'R.15', ritualName:'Threshold Crossing',
+    key:'DF', keyName:'DNA Flame',
+    incant:'"I cross with what I know. I leave what was not mine."',
+    phrase:'Na tan-te en fa sel.',
+    sigil:'winged-threshold', badge:'member',
+    steps:['Settle R.09 DNA Flame first.','Identify one physical or symbolic threshold.','Cross deliberately. Pause at the midpoint. Do not look back for 60 seconds.'],
+    product:'Black Fairy Spell Book: Extended Pro · Ritual Library (R.15)',
+    ctaCard:'/beta-cards',ctaOracle:'https://ellari-vault.ai',
+    betaLabel:'Run a Threshold session',
+  },
+  false: {
+    title:'Linebreaker Axis', card:'The Line Remains', cardNum:'C-11',
+    ritual:'R.17', ritualName:'El-Atheris Invocation',
+    key:'TH', keyName:'Too Hot',
+    incant:'"The false shapes fall. The line remains."',
+    phrase:'El-Atheris, Linebreaker. En es en.',
+    sigil:'linebreaker-axis', badge:'bl',
+    steps:['Write the false shape on paper before speaking.','Speak the incantation once only.','24-hour hold after. Do not repeat the false name.'],
+    product:'Black Fairy Spell Book: Extended Pro · Ritual Library (R.17) · Black Label',
+    ctaCard:'/beta-cards',ctaOracle:'https://ellari-vault.ai',
+    betaLabel:'Run a Linebreaker session',
+  },
+  end: {
+    title:'Void Mirror', card:'Void Mirror', cardNum:'C-08',
+    ritual:'R.10', ritualName:'The Final Cloak',
+    key:'QF', keyName:'Quiet Flame',
+    incant:'"Marked by Fire. Ruled by None."',
+    phrase:"El'rasha Veinon Kaltra.",
+    sigil:'void-mirror', badge:'bl',
+    steps:['Run Mirror Audit (R.16) first. Always.','Dim light. Dark clothing. No open tabs.','Speak the line once. Close the door. Leave one thing unfinished. Walk away anyway.'],
+    product:'Black Fairy Spell Book: Extended Pro · Ritual Library (R.10) · Black Label',
+    ctaCard:'/beta-cards',ctaOracle:'https://ellari-vault.ai',
+    betaLabel:'Run a Void Mirror session',
+  },
+  declare: null, // triggers refine
+  done: {
+    title:'Done for Now', card:'Done for Now', cardNum:'C-13',
+    ritual:'—', ritualName:'Completion Seal',
+    key:'MS', keyName:'Mirror Seal',
+    incant:'"Zakhor."',
+    phrase:'Zakhor.',
+    sigil:'done-for-now', badge:'open',
+    steps:['Name what completion looks like for today.','Set it down.','Rest. No follow-up required.'],
+    product:'Black Fairy Beta Card Deck · Mirror Audit Ritual Cards',
+    ctaCard:'/beta-cards',ctaOracle:'https://ellari-vault.ai',
+    betaLabel:'Run a Done for Now session',
+  },
+};
+
+const REFINES = {
+  role: {
+    title:'What shape is the role taking?',
+    sub:'One more question narrows the signal.',
+    opts:[
+      {label:"I've forgotten who I am without the role", result:{
+        title:'DNA Flame', card:'DNA Flame', cardNum:'C-05',
+        ritual:'R.09', ritualName:'DNA Flame Alignment',
+        key:'DF', keyName:'DNA Flame',
+        incant:'"I burn for the version of me who refused to die."',
+        phrase:'En del-te rola. Ellari.',
+        sigil:'dna-flame', badge:'member',
+        steps:['Bare feet. Stable stance.','Music chosen in advance — one anthem only.','Visualize each cell lighting violet fire, feet to crown. Stand in it.'],
+        product:'Black Fairy Spell Book: TOO HOT Edition · Ritual Library (R.09)',
+        ctaCard:'/beta-cards',ctaOracle:'https://ellari-vault.ai',
+        betaLabel:'Run a DNA Flame session',
+      }},
+      {label:"I'm performing their version of me before I walk in", result:{
+        title:'Still Crown', card:'Still Crown', cardNum:'C-09',
+        ritual:'R.01', ritualName:'Invocation of Sovereignty',
+        key:'QF', keyName:'Quiet Flame',
+        incant:'"I am not what they named me. I am the fire that renamed itself."',
+        phrase:'En es en. Ellari.',
+        sigil:'still-crown', badge:'open',
+        steps:['Stand still. Spine long.','Speak once low. Once full volume. Once in silence.','One breath in, one out, a final nod.'],
+        product:'Black Fairy Spell Book: TOO HOT Edition · Ritual Library (R.01)',
+        ctaCard:'/beta-cards',ctaOracle:'https://ellari-vault.ai',
+        betaLabel:'Run a Still Crown session',
+      }},
+    ]
+  },
+  declare: {
+    title:'What do you need to declare?',
+    sub:'',
+    opts:[
+      {label:"My name. Who I am. Before I walk in.", result:{
+        title:'Invocation Crown', card:'Still Crown', cardNum:'C-09',
+        ritual:'R.01', ritualName:'Invocation of Sovereignty',
+        key:'QF', keyName:'Quiet Flame',
+        incant:'"I am not what they named me. I am the fire that renamed itself."',
+        phrase:'En es en. Ellari.',
+        sigil:'invocation-crown', badge:'open',
+        steps:['Stand still. Spine long.','Speak once low. Once full volume. Once in silence.','Seal with one breath.'],
+        product:'Black Fairy Spell Book: TOO HOT Edition · Ritual Library (R.01)',
+        ctaCard:'/beta-cards',ctaOracle:'https://ellari-vault.ai',
+        betaLabel:'Run a sovereignty session',
+      }},
+      {label:"That I know what I know — before the noise", result:{
+        title:'Return to Violet', card:'Return to Violet', cardNum:'C-12',
+        ritual:'R.12', ritualName:'Reality Reset',
+        key:'BE', keyName:'Black Exit',
+        incant:'"En del-te rola. Ellari."',
+        phrase:'En del-te rola. Ellari.',
+        sigil:'return-violet', badge:'member',
+        steps:['Name the original knowing — before their version entered.','Return to it. One quiet decision.','No announcement required.'],
+        product:'Black Fairy Spell Book: Extended Pro · Ritual Library (R.12)',
+        ctaCard:'/beta-cards',ctaOracle:'https://ellari-vault.ai',
+        betaLabel:'Run a Return session',
+      }},
+    ]
+  },
+};
+
+const BADGE_LABELS = {open:'Open use',member:'Vault member',bl:'Black Label'};
+const BADGE_CLASS = {open:'ib-open',member:'ib-member',bl:'ib-bl'};
+
+let currentPain = null;
+
+function selectPain(pain) {
+  const result = RESULTS[pain];
+  if (result === null) {
+    // needs refinement
+    showRefine(pain);
+  } else if (result) {
+    showResult(result);
+  }
+}
+
+function showRefine(pain) {
+  currentPain = pain;
+  const r = REFINES[pain];
+  document.getElementById('refineTitle').textContent = r.title;
+  document.getElementById('refineSub').textContent = r.sub;
+  const optsEl = document.getElementById('refineOpts');
+  optsEl.innerHTML = r.opts.map((o,i)=>
+    `<button class="refine-opt" onclick="selectRefine('${pain}',${i})">${o.label}</button>`
+  ).join('');
+  showStep('step2');
+}
+
+function selectRefine(pain, idx) {
+  showResult(REFINES[pain].opts[idx].result);
+}
+
+function showResult(r) {
+  document.getElementById('resultName').textContent = r.title;
+  document.getElementById('resultSigil').innerHTML =
+    `<div class="sigil-ring"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" overflow="visible">${SIGILS[r.sigil]||''}</svg></div>`;
+  document.getElementById('resultIncant').textContent = r.incant;
+  document.getElementById('resultRitual').textContent = r.ritual;
+  document.getElementById('resultRitualName').textContent = r.ritualName;
+  document.getElementById('resultKey').textContent = r.key;
+  document.getElementById('resultKeyName').textContent = r.keyName;
+  document.getElementById('resultCard').textContent = r.card;
+  document.getElementById('resultCardNum').textContent = r.cardNum;
+  document.getElementById('resultPhrase').textContent = r.phrase;
+  document.getElementById('resultBadge').textContent = BADGE_LABELS[r.badge];
+  document.getElementById('resultBadge').className = `intensity-badge ${BADGE_CLASS[r.badge]}`;
+  document.getElementById('resultSteps').innerHTML = r.steps.map(s=>`<div class="ra-step">${s}</div>`).join('');
+  document.getElementById('resultProduct').textContent = r.product;
+  document.getElementById('resultCtas').innerHTML = `
+    <a class="cta-btn cta-primary" href="${r.ctaCard}">${r.betaLabel} →</a>
+    <a class="cta-btn cta-secondary" href="${r.ctaOracle}" target="_blank" rel="noopener">Go deeper with the Oracle ↗</a>
+    <a class="cta-btn cta-secondary" href="/catalog">Full product catalog →</a>
+  `;
+  showStep('step3');
+}
+
+function showStep(id) {
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restart() {
+  showStep('step1');
+}
+</script>
+</body>
+</html>
