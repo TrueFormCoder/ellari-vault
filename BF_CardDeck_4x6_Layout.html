@@ -79,36 +79,54 @@ body{background:#1a1628;color:var(--white);font-family:'Cormorant Garamond',seri
 .lane-qa{color:rgba(74,68,96,.8);border:1px solid rgba(74,68,96,.3);}
 
 /* Sigil area (spec: top sigil layer) */
-.card-sigil{position:absolute;top:32px;left:50%;transform:translateX(-50%);z-index:3;
-  width:64px;height:64px;opacity:.7;transition:opacity .2s;}
+/* Sigil area — centered within dome (top 45% of card) */
+.card-sigil-area{
+  position:absolute;top:0;left:0;right:0;
+  height:45%;
+  z-index:3;
+  display:flex;align-items:center;justify-content:center;
+  padding-top:22px;
+  pointer-events:none;
+}
+.card-sigil{
+  width:90px;height:90px;
+  opacity:.75;transition:opacity .2s;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.card-sigil svg{width:100%;height:100%;overflow:visible;}
 .card:hover .card-sigil{opacity:1;}
 
 /* Lower third gradient (spec: lower-third gradient layer) */
-.card-lower{position:absolute;bottom:0;left:0;right:0;height:58%;z-index:2;
-  background:linear-gradient(0deg,rgba(3,2,5,0.97) 0%,rgba(3,2,5,0.88) 55%,transparent 100%);}
+.card-lower{position:absolute;bottom:0;left:0;right:0;height:62%;z-index:2;
+  background:linear-gradient(0deg,rgba(3,2,5,0.98) 0%,rgba(3,2,5,0.92) 45%,rgba(3,2,5,0.4) 75%,transparent 100%);}
 
 /* Text content (spec: title, signal, mirror, move, footer) */
 .card-content{position:absolute;bottom:0;left:0;right:0;z-index:4;
-  padding:0 16px 14px;}
+  padding:0 16px 12px;}
 
 /* Title (spec: All caps or small caps. Silver/near-white. 18-24pt.) */
-.card-title{font-size:17px;font-weight:300;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--silver);text-align:center;margin-bottom:12px;line-height:1.1;}
+.card-title{font-size:16px;font-weight:300;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--silver);text-align:center;margin-bottom:10px;line-height:1.1;}
 
 /* Divider line */
-.card-div{width:32px;height:1px;background:rgba(201,196,207,.2);margin:0 auto 10px;}
+.card-div{width:32px;height:1px;background:rgba(201,196,207,.2);margin:0 auto 6px;}
+.card-chips{display:flex;gap:6px;justify-content:center;margin-bottom:8px;}
+.chip-key{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.2em;
+  color:rgba(160,112,220,.7);padding:2px 5px;border:1px solid rgba(144,96,200,.2);border-radius:2px;}
+.chip-int{font-family:'Space Mono',monospace;font-size:7px;color:rgba(201,196,207,.35);letter-spacing:.1em;}
 
 /* Signal / Mirror / Move (spec: small caps, 7-8pt, violet or silver accent) */
-.card-fields{display:flex;flex-direction:column;gap:6px;}
+.card-fields{display:flex;flex-direction:column;gap:5px;}
 .cf-row{display:flex;flex-direction:column;gap:2px;}
 .cf-label{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.3em;
-  text-transform:uppercase;color:rgba(144,96,200,.75);}
-.cf-text{font-size:10px;color:rgba(201,196,207,.8);line-height:1.4;}
+  text-transform:uppercase;color:rgba(160,112,220,.85);}
+.cf-text{font-size:9.5px;color:rgba(201,196,207,.82);line-height:1.38;}
 
 /* Footer (spec: card number and product mark only) */
-.card-footer{position:absolute;bottom:10px;right:14px;z-index:5;
-  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.15em;
-  color:rgba(36,32,64,.9);text-transform:uppercase;}
+.card-footer{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);z-index:5;
+  font-family:'Space Mono',monospace;font-size:5.5px;letter-spacing:.18em;
+  color:rgba(80,72,104,.55);text-transform:uppercase;white-space:nowrap;}
 
 /* CARD BACK */
 .card-back{position:absolute;inset:0;background:var(--void);z-index:10;
@@ -179,118 +197,40 @@ const SIGIL_PATHS = {
   'spiral-release': `<circle cx="100" cy="100" r="74"/><path d="M100 95 a5 5 0 1 0 0 10 a15 15 0 1 0 0 -30 a28 28 0 1 0 0 56 a42 42 0 1 0 0 -84 a58 58 0 1 0 0 116"/>`,
   'void-mirror': `<rect x="58" y="25" width="84" height="150" rx="6"/><rect x="70" y="38" width="60" height="124" rx="3"/><line x1="52" y1="180" x2="148" y2="12" stroke-width="4.5"/>`,
   'still-crown': `<path d="M55 88 L72 55 L90 76 L100 58 L110 76 L128 55 L145 88"/><line x1="30" y1="100" x2="170" y2="100"/><circle cx="100" cy="100" r="6" stroke-width="6"/>`,
-  'bf-flight': `<line x1="40" y1="165" x2="160" y2="35"/><path d="M115 55 C90 40, 55 60, 60 95"/><path d="M115 55 C140 70, 155 100, 135 125"/><circle cx="100" cy="100" r="8"/>`,
+  'bf-flight': `<line x1="40" y1="165" x2="160" y2="35"/><path d="M100 72 C75 55, 42 68, 48 105"/><path d="M100 72 C125 55, 158 68, 152 105"/><circle cx="100" cy="118" r="8"/>`,
   'line-remains': `<line x1="100" y1="18" x2="100" y2="182"/><path d="M100 40 A62 62 0 0 1 162 100"/><path d="M100 160 A62 62 0 0 1 38 100"/><circle cx="100" cy="100" r="8"/>`,
-  'return-violet': `<line x1="100" y1="40" x2="100" y2="74"/><path d="M100 78 m36 0 a36 36 0 1 1 -72 0 a26 26 0 1 0 52 0 a16 16 0 1 1 -32 0 a6 6 0 1 0 12 0"/><ellipse cx="100" cy="150" rx="60" ry="22"/>`,
-  'done-for-now': `<line x1="30" y1="100" x2="155" y2="100"/><circle cx="170" cy="100" r="10"/><line x1="100" y1="70" x2="100" y2="130" stroke-width="1.5" stroke-opacity=".4"/>`,
+  'return-violet': `<line x1="100" y1="28" x2="100" y2="62"/><path d="M100 64 m32 0 a32 32 0 1 1 -64 0 a22 22 0 1 0 44 0 a12 12 0 1 1 -24 0 a4 4 0 1 0 8 0"/><ellipse cx="100" cy="145" rx="52" ry="18"/>`,
+  'done-for-now': `<line x1="20" y1="100" x2="162" y2="100"/><circle cx="178" cy="100" r="10"/><line x1="95" y1="68" x2="95" y2="132" stroke-width="1.5" stroke-opacity=".35"/>`,
   'mirror-circuit': `<line x1="28" y1="100" x2="172" y2="100"/><path d="M58 100 L62 88 L50 96 L66 96 L54 88 Z"/><ellipse cx="100" cy="100" rx="22" ry="14"/><circle cx="100" cy="100" r="6" stroke-width="6"/><path d="M142 86 A18 18 0 1 1 142 114" stroke-linecap="round"/>`,
 };
 
 const CARDS = [
-  {
-    num:'C-01', ritual:'R.16', name:'Mirror Audit', sigil:'mirror-audit', lane:'Public',
-    signal:'What is true right now?',
-    mirror:'Name the thing you have been avoiding knowing.',
-    move:'Write one true sentence. Stop when you stop.',
-    incant:'What is true right now? The mirror confirms it.',
-    version:'V1.0', intensity: 1,
-  },
-  {
-    num:'C-02', ritual:'R.06', name:'Memory Unbinding', sigil:'memory-unbinding', lane:'Facilitator',
-    signal:'What is still attached that was never yours?',
-    mirror:'Name the cord. One thing only.',
-    move:'Cut it once. Name what remains.',
-    incant:'This cord fed on my clarity. I now feed on freedom.',
-    version:'V1.0', intensity: 3,
-  },
-  {
-    num:'C-03', ritual:'R.15', name:'Winged Threshold', sigil:'winged-threshold', lane:'Public',
-    signal:'What are you crossing with?',
-    mirror:'What did you agree to carry that was not the price of entry?',
-    move:'Cross with what you know. Leave what was not yours.',
-    incant:'I cross with what I know. I leave what was not mine.',
-    version:'V1.0', intensity: 2,
-  },
-  {
-    num:'C-04', ritual:'R.02', name:'Sealed Eye', sigil:'mirror-seal', lane:'Internal QA',
-    signal:'What have you already seen?',
-    mirror:'Name the perception you sealed.',
-    move:'Look once, clean. Then seal it.',
-    incant:'Seen by me. Not owned by them.',
-    version:'V1.0', intensity: 2,
-  },
-  {
-    num:'C-05', ritual:'R.09', name:'DNA Flame', sigil:'dna-flame', lane:'Public',
-    signal:'Where does your clarity live in your body?',
-    mirror:'What shape does your truest self take?',
-    move:'Stand in it. One full breath.',
-    incant:'I burn for the version of me who refused to die.',
-    version:'V1.0', intensity: 2,
-  },
-  {
-    num:'C-06', ritual:'R.05', name:'Shadowlight Shield', sigil:'shadowlight-shield', lane:'Public',
-    signal:'What burden was assigned to you without consent?',
-    mirror:'Name three roles you are dropping.',
-    move:'Scatter the salt. Name what\'s left.',
-    incant:'Not my burden. Not my cage.',
-    version:'V1.0', intensity: 1,
-  },
-  {
-    num:'C-07', ritual:'R.08', name:'Spiral Release', sigil:'spiral-release', lane:'Public',
-    signal:'What are you still present for that you already left?',
-    mirror:'Name the exit you are postponing.',
-    move:'Make one clean move. Then go silent.',
-    incant:'I have left the room. Do not follow.',
-    version:'V1.0', intensity: 1,
-  },
-  {
-    num:'C-08', ritual:'R.10', name:'Void Mirror', sigil:'void-mirror', lane:'Facilitator',
-    signal:'What is this silence protecting?',
-    mirror:'Name what armor has replaced presence.',
-    move:'Leave one thing unfinished. Walk away anyway.',
-    incant:'Marked by Fire. Ruled by None.',
-    version:'V1.0', intensity: 3,
-  },
-  {
-    num:'C-09', ritual:'R.01', name:'Still Crown', sigil:'still-crown', lane:'Operator',
-    signal:'Who are you when no one is naming you?',
-    mirror:'What name is yours?',
-    move:'Say your name once. Quietly. Mean it.',
-    incant:'I am not what they named me. I am the fire that renamed itself.',
-    version:'V1.0', intensity: 1,
-  },
-  {
-    num:'C-10', ritual:'—', name:'Black Fairy Flight', sigil:'bf-flight', lane:'Internal QA',
-    signal:'What direction is up right now?',
-    mirror:'What threshold have you already crossed?',
-    move:'Face the open space. Take one step into it.',
-    incant:'Na tan-te en fa sel.',
-    version:'V1.0', intensity: 2,
-  },
-  {
-    num:'C-11', ritual:'R.17', name:'The Line Remains', sigil:'line-remains', lane:'Facilitator',
-    signal:'What false shape has collapsed?',
-    mirror:'Name what was never true.',
-    move:'Name the line. Let it stand.',
-    incant:'The false shapes fall. The line remains.',
-    version:'V1.0', intensity: 3,
-  },
-  {
-    num:'C-12', ritual:'R.12', name:'Return to Violet', sigil:'return-violet', lane:'Internal QA',
-    signal:'What did you already know before the noise?',
-    mirror:'Name the original knowing.',
-    move:'Return to it. One quiet decision.',
-    incant:'En del-te rola. Ellari.',
-    version:'V1.0', intensity: 1,
-  },
-  {
-    num:'C-13', ritual:'—', name:'Done for Now', sigil:'done-for-now', lane:'Public',
-    signal:'Is this complete enough to set down?',
-    mirror:'Name what completion looks like for today.',
-    move:'Set it down. Rest.',
-    incant:'Zakhor.',
-    version:'V1.0', intensity: 1,
-  },
+  {num:'C-01',ritual:'R.16',name:'Mirror Audit',sigil:'mirror-audit',lane:'Public',key:'MS',intensity:1,
+   signal:'What is true right now?',mirror:'Name the thing you have been avoiding knowing.',move:'Write one true sentence. Stop when you stop.',incant:'What is true right now? The mirror confirms it.',version:'V1.0'},
+  {num:'C-02',ritual:'R.06',name:'Memory Unbinding',sigil:'memory-unbinding',lane:'Facilitator',key:'BE',intensity:3,
+   signal:'What is still attached that was never yours?',mirror:'Name the cord. One thing only.',move:'Cut it once. Name what remains.',incant:'This cord fed on my clarity. I now feed on freedom.',version:'V1.0'},
+  {num:'C-03',ritual:'R.15',name:'Winged Threshold',sigil:'winged-threshold',lane:'Public',key:'DF',intensity:2,
+   signal:'What are you crossing with?',mirror:'What did you agree to carry that was not the price of entry?',move:'Cross with what you know. Leave what was not yours.',incant:'I cross with what I know. I leave what was not mine.',version:'V1.0'},
+  {num:'C-04',ritual:'R.02',name:'Sealed Eye',sigil:'mirror-seal',lane:'Internal QA',key:'MS',intensity:2,
+   signal:'What have you already seen?',mirror:'Name the perception you sealed.',move:'Look once, clean. Then seal it.',incant:'Seen by me. Not owned by them.',version:'V1.0'},
+  {num:'C-05',ritual:'R.09',name:'DNA Flame',sigil:'dna-flame',lane:'Public',key:'DF',intensity:2,
+   signal:'Where does your clarity live in your body?',mirror:'What shape does your truest self take?',move:'Stand in it. One full breath.',incant:'I burn for the version of me who refused to die.',version:'V1.0'},
+  {num:'C-06',ritual:'R.05',name:'Shadowlight Shield',sigil:'shadowlight-shield',lane:'Public',key:'QF',intensity:1,
+   signal:'What burden was assigned to you without consent?',mirror:'Name three roles you are dropping.',move:'Scatter the salt. Name what's left.',incant:'Not my burden. Not my cage.',version:'V1.0'},
+  {num:'C-07',ritual:'R.08',name:'Spiral Release',sigil:'spiral-release',lane:'Public',key:'BE',intensity:1,
+   signal:'What are you still present for that you already left?',mirror:'Name the exit you are postponing.',move:'Make one clean move. Then go silent.',incant:'I have left the room. Do not follow.',version:'V1.0'},
+  {num:'C-08',ritual:'R.10',name:'Void Mirror',sigil:'void-mirror',lane:'Facilitator',key:'QF',intensity:3,
+   signal:'What is this silence protecting?',mirror:'Name what armor has replaced presence.',move:'Leave one thing unfinished. Walk away anyway.',incant:'Marked by Fire. Ruled by None.',version:'V1.0'},
+  {num:'C-09',ritual:'R.01',name:'Still Crown',sigil:'still-crown',lane:'Operator',key:'QF',intensity:1,
+   signal:'Who are you when no one is naming you?',mirror:'What name is yours?',move:'Say your name once. Quietly. Mean it.',incant:'I am not what they named me. I am the fire that renamed itself.',version:'V1.0'},
+  {num:'C-10',ritual:'—',name:'Black Fairy Flight',sigil:'bf-flight',lane:'Internal QA',key:'DF',intensity:2,
+   signal:'What direction is up right now?',mirror:'What threshold have you already crossed?',move:'Face the open space. Take one step into it.',incant:'Na tan-te en fa sel.',version:'V1.0'},
+  {num:'C-11',ritual:'R.17',name:'The Line Remains',sigil:'line-remains',lane:'Facilitator',key:'TH',intensity:3,
+   signal:'What false shape has collapsed?',mirror:'Name what was never true.',move:'Name the line. Let it stand.',incant:'The false shapes fall. The line remains.',version:'V1.0'},
+  {num:'C-12',ritual:'R.12',name:'Return to Violet',sigil:'return-violet',lane:'Internal QA',key:'BE',intensity:1,
+   signal:'What did you already know before the noise?',mirror:'Name the original knowing.',move:'Return to it. One quiet decision.',incant:'En del-te rola. Ellari.',version:'V1.0'},
+  {num:'C-13',ritual:'—',name:'Done for Now',sigil:'done-for-now',lane:'Public',key:'MS',intensity:1,
+   signal:'Is this complete enough to set down?',mirror:'Name what completion looks like for today.',move:'Set it down. Rest.',incant:'Zakhor.',version:'V1.0'},
 ];
 
 const LANE_CLASS = {
@@ -303,8 +243,10 @@ let showBacks = false, selectedCard = null, currentLane = 'all';
 function sigilSVG(id, s='#c9c4cf') {
   const p = SIGIL_PATHS[id];
   if (!p) return '';
-  return `<svg viewBox="0 0 200 200" width="64" height="64" style="overflow:visible">
-    <g fill="none" stroke="${s}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${p}</g>
+  return `<svg viewBox="0 0 200 200" width="90" height="90"
+    style="overflow:visible;display:block;"
+    preserveAspectRatio="xMidYMid meet">
+    <g fill="none" stroke="${s}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">${p}</g>
   </svg>`;
 }
 
@@ -320,11 +262,15 @@ function cardHTML(c, i) {
       <div class="card-border"></div>
       <div class="card-num">${c.num} · ${c.ritual}</div>
       <div class="card-lane ${laneC}">${c.lane}</div>
-      <div class="card-sigil">${sigilSVG(c.sigil)}</div>
+      <div class="card-sigil-area"><div class="card-sigil">${sigilSVG(c.sigil)}</div></div>
       <div class="card-lower"></div>
       <div class="card-content">
         <div class="card-title">${c.name}</div>
         <div class="card-div"></div>
+        <div class="card-chips">
+          <span class="chip-key">${c.key||'MS'}</span>
+          <span class="chip-int">${'●'.repeat(c.intensity)}${'○'.repeat(3-c.intensity)}</span>
+        </div>
         <div class="card-fields">
           <div class="cf-row">
             <span class="cf-label">Signal</span>
