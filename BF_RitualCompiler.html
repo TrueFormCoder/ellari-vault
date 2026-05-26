@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Black Fairy — Ritual Compiler</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#040306;--panel:#0f0c1a;--panel2:#140e20;
+  --v1:#2a0858;--v2:#5020a0;--v3:#8050c8;--v4:#b080e8;--v5:#d8b8ff;
+  --s1:#c9c4cf;--s2:#7a7890;--mist:#3c3458;--mist2:#524a70;
+  --white:#ece8f8;--border:#1e1838;--border2:#281e40;
+  --green:#3a9870;--green2:#50c888;
+  --amber:#b88030;--amber2:#e0b840;
+  --red:#a03050;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--void);color:var(--white);font-family:'Cormorant Garamond',serif;font-size:16px;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 65% 45% at 50% 0%,rgba(80,32,160,.16) 0%,transparent 60%);}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.024;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:160px;}
+
+.nav{position:sticky;top:0;z-index:100;background:rgba(4,3,6,.94);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);height:50px;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;}
+.nav-back{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.25em;color:var(--mist2);
+  text-transform:uppercase;text-decoration:none;transition:color .2s;}
+.nav-back:hover{color:var(--s1);}
+.nav-brand{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.2em;color:var(--mist);text-transform:uppercase;}
+
+.wrap{position:relative;z-index:1;max-width:700px;margin:0 auto;padding:48px 24px 80px;}
+
+/* STEPS */
+.compiler-step{display:none;}
+.compiler-step.active{display:block;animation:stepIn .35s ease both;}
+@keyframes stepIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* STEP HEADER */
+.step-kicker{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.45em;
+  color:var(--mist2);text-transform:uppercase;display:block;margin-bottom:10px;}
+.step-title{font-size:clamp(26px,5vw,40px);font-weight:300;letter-spacing:.1em;margin-bottom:8px;}
+.step-title em{color:var(--v4);font-style:normal;}
+.step-rule{width:44px;height:1px;background:var(--v2);margin-bottom:14px;}
+.step-sub{font-size:14px;font-style:italic;color:var(--s2);line-height:1.65;max-width:520px;margin-bottom:32px;}
+
+/* PROGRESS BAR */
+.prog-bar{display:flex;gap:6px;margin-bottom:40px;}
+.prog-dot{width:24px;height:3px;border-radius:2px;background:var(--border2);transition:background .3s;}
+.prog-dot.done{background:var(--v3);}
+.prog-dot.active{background:var(--v4);}
+
+/* ── STEP 1: CARD SELECT ─────────────────────────────────────── */
+.card-select-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px;}
+@media(max-width:480px){.card-select-grid{grid-template-columns:1fr;}}
+.card-opt{
+  background:var(--panel);border:1px solid var(--border);border-radius:4px;
+  padding:14px 16px;cursor:pointer;transition:all .15s;position:relative;
+}
+.card-opt:hover{border-color:var(--border2);background:var(--panel2);}
+.card-opt.selected{border-color:var(--v3);background:var(--panel2);}
+.card-opt.selected::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:var(--v3);border-radius:3px 0 0 3px;}
+.co-name{font-size:15px;letter-spacing:.04em;color:var(--white);margin-bottom:2px;}
+.co-meta{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.15em;color:var(--mist2);text-transform:uppercase;}
+
+/* ── STEP 2: INTAKE ──────────────────────────────────────────── */
+.intake-section{background:var(--panel);border:1px solid var(--border);border-radius:4px;
+  padding:20px;margin-bottom:12px;}
+.is-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.3em;
+  color:var(--mist2);text-transform:uppercase;display:block;margin-bottom:14px;}
+
+.material-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+@media(max-width:420px){.material-grid{grid-template-columns:1fr;}}
+.mat-item{display:flex;align-items:center;gap:8px;padding:8px 10px;
+  border-radius:3px;cursor:pointer;background:rgba(0,0,0,.2);
+  border:1px solid transparent;transition:all .15s;user-select:none;}
+.mat-item:hover{border-color:var(--border);}
+.mat-item.checked{border-color:rgba(80,200,136,.3);background:rgba(80,200,136,.05);}
+.mat-cb{width:12px;height:12px;border:1px solid var(--mist);border-radius:2px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.mat-item.checked .mat-cb{background:var(--green2);border-color:var(--green2);}
+.mat-check{color:#000;font-size:8px;opacity:0;transition:opacity .15s;}
+.mat-item.checked .mat-check{opacity:1;}
+.mat-name{font-size:13px;color:var(--s1);}
+
+.time-grid{display:flex;gap:8px;flex-wrap:wrap;}
+.time-opt{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;
+  padding:7px 14px;border-radius:3px;cursor:pointer;background:transparent;
+  border:1px solid var(--border);color:var(--mist2);transition:all .15s;}
+.time-opt.selected{border-color:var(--v3);color:var(--v4);background:rgba(128,80,200,.08);}
+.time-opt:hover:not(.selected){border-color:var(--mist);color:var(--s2);}
+
+.sound-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+@media(max-width:420px){.sound-grid{grid-template-columns:1fr 1fr;}}
+.sound-opt{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;
+  padding:7px 10px;border-radius:3px;cursor:pointer;background:transparent;
+  border:1px solid var(--border);color:var(--mist2);transition:all .15s;text-align:center;}
+.sound-opt.selected{border-color:var(--v3);color:var(--v4);background:rgba(128,80,200,.08);}
+
+.context-grid{display:flex;gap:8px;flex-wrap:wrap;}
+.ctx-opt{font-size:12px;font-style:italic;padding:6px 12px;border-radius:3px;cursor:pointer;
+  background:transparent;border:1px solid var(--border);color:var(--mist2);transition:all .15s;}
+.ctx-opt.selected{border-color:var(--v3);color:var(--v4);}
+
+/* ── STEP 3: COMPILED SESSION ────────────────────────────────── */
+.compiled-header{text-align:center;margin-bottom:28px;}
+.ch-sigil{width:80px;height:80px;margin:0 auto 16px;opacity:.85;}
+.ch-sigil svg{width:100%;height:100%;overflow:visible;}
+.ch-title{font-size:clamp(20px,4vw,30px);font-weight:300;letter-spacing:.12em;margin-bottom:4px;}
+.ch-incant{font-family:'IM Fell English',serif;font-style:italic;font-size:18px;
+  color:var(--v4);margin-bottom:12px;line-height:1.5;}
+.ch-chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
+.ch-chip{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.18em;text-transform:uppercase;
+  padding:3px 9px;border-radius:2px;}
+.chip-v{color:var(--green2);border:1px solid rgba(80,200,136,.3);}
+.chip-k{color:var(--v4);border:1px solid rgba(128,80,200,.3);}
+.chip-t{color:var(--s2);border:1px solid var(--border2);}
+.chip-warn{color:var(--amber2);border:1px solid rgba(220,180,64,.3);}
+
+/* Session steps */
+.session-plan{margin-top:24px;}
+.sp-section{margin-bottom:14px;}
+.sp-label{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.3em;
+  color:var(--mist2);text-transform:uppercase;display:block;margin-bottom:6px;}
+.sp-content{background:var(--panel);border:1px solid var(--border);border-radius:3px;padding:14px 16px;}
+
+.setup-items{display:flex;flex-direction:column;gap:4px;}
+.setup-item{font-size:13.5px;color:var(--s1);padding-left:14px;position:relative;line-height:1.5;}
+.setup-item::before{content:'·';position:absolute;left:0;color:var(--v3);}
+.setup-item.sub{color:var(--mist2);font-style:italic;font-size:12px;}
+
+.step-list{display:flex;flex-direction:column;gap:6px;counter-reset:step;}
+.step-item{display:grid;grid-template-columns:32px 1fr;gap:0;counter-increment:step;}
+.si-num{font-family:'Space Mono',monospace;font-size:9px;color:var(--v3);
+  display:flex;align-items:flex-start;padding-top:3px;}
+.si-text{font-size:13.5px;color:var(--s1);line-height:1.6;padding:3px 0;}
+.si-phase{font-family:'Space Mono',monospace;font-size:7px;color:var(--mist);
+  letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+
+.done-state{background:rgba(80,200,136,.06);border:1px solid rgba(80,200,136,.2);
+  border-radius:3px;padding:12px 14px;font-size:13.5px;color:var(--s1);line-height:1.6;}
+
+/* TIMER */
+.timer-block{background:var(--panel);border:1px solid var(--border2);border-radius:4px;
+  padding:18px;margin-top:16px;text-align:center;}
+.tb-label{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.3em;
+  color:var(--mist2);text-transform:uppercase;display:block;margin-bottom:10px;}
+.timer-display{font-family:'Space Mono',monospace;font-size:36px;color:var(--v4);
+  letter-spacing:.08em;margin-bottom:12px;}
+.timer-phase{font-size:13px;font-style:italic;color:var(--s2);margin-bottom:12px;}
+.timer-btns{display:flex;gap:8px;justify-content:center;}
+.t-btn{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;
+  padding:8px 16px;border-radius:3px;cursor:pointer;background:transparent;transition:all .2s;}
+.t-btn.start{border:1px solid var(--v2);color:var(--v4);}
+.t-btn.start:hover{background:var(--v2);color:var(--white);}
+.t-btn.reset{border:1px solid var(--border);color:var(--mist2);}
+
+/* ── STEP 4: RECEIPT ─────────────────────────────────────────── */
+.receipt{background:var(--panel);border:1px solid var(--border);border-radius:5px;overflow:hidden;}
+.receipt-top{height:3px;background:linear-gradient(90deg,var(--v2),var(--v3),transparent);}
+.receipt-body{padding:24px;}
+.r-eyebrow{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.4em;
+  color:var(--mist2);text-transform:uppercase;margin-bottom:8px;}
+.r-title{font-size:22px;font-weight:300;letter-spacing:.1em;margin-bottom:4px;}
+.r-sub{font-size:12px;font-style:italic;color:var(--s2);margin-bottom:20px;}
+.r-row{display:grid;grid-template-columns:110px 1fr;gap:8px;padding:8px 0;
+  border-bottom:1px solid rgba(30,24,56,.5);}
+.r-row:last-of-type{border-bottom:none;}
+.r-lbl{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.15em;
+  color:var(--mist2);text-transform:uppercase;padding-top:2px;}
+.r-val{font-size:13.5px;color:var(--s1);line-height:1.5;}
+.r-seal{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;}
+.r-seal-id{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;color:var(--mist2);}
+.r-provenance{font-size:11px;font-style:italic;color:var(--mist);line-height:1.5;margin-top:8px;}
+
+/* BUTTONS */
+.compile-btn{
+  width:100%;background:transparent;border:1px solid var(--v2);color:var(--v4);
+  font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+  padding:14px;border-radius:3px;cursor:pointer;transition:all .2s;margin-top:8px;
+}
+.compile-btn:hover{background:var(--v2);color:var(--white);}
+.compile-btn:disabled{opacity:.4;cursor:default;}
+
+.action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
+.a-btn{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;
+  padding:10px 16px;border-radius:3px;cursor:pointer;background:transparent;transition:all .2s;text-decoration:none;display:inline-block;}
+.a-btn.primary{border:1px solid var(--v2);color:var(--v4);}
+.a-btn.primary:hover{background:var(--v2);color:var(--white);}
+.a-btn.ghost{border:1px solid var(--border2);color:var(--mist2);}
+.a-btn.ghost:hover{border-color:var(--border);color:var(--s2);}
+
+/* PRINT */
+@media print{
+  body{background:#fff;color:#000;}
+  .nav,.prog-bar,.timer-block,.action-row,.compile-btn,.compiler-step:not(.active){display:none;}
+  .receipt{border:1px solid #ccc;}
+  .r-lbl,.r-seal-id,.step-kicker,.sp-label,.tb-label{color:#666;}
+  .r-val,.si-text,.setup-item,.done-state,.ch-incant,.ch-title{color:#000;}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-back" href="/diagnostic">&#8592; Diagnostic</a>
+  <span class="nav-brand">Ritual Compiler &middot; MIRROR&trade;</span>
+</nav>
+
+<div class="wrap">
+
+  <!-- PROGRESS -->
+  <div class="prog-bar" id="progBar">
+    <div class="prog-dot active" id="pd0"></div>
+    <div class="prog-dot" id="pd1"></div>
+    <div class="prog-dot" id="pd2"></div>
+    <div class="prog-dot" id="pd3"></div>
+  </div>
+
+  <!-- ── STEP 1: SELECT CARD ────────────────────────────────── -->
+  <div class="compiler-step active" id="step1">
+    <span class="step-kicker">Step 1 of 4 &middot; Ritual Compiler</span>
+    <h1 class="step-title">Which <em>ritual?</em></h1>
+    <div class="step-rule"></div>
+    <p class="step-sub">Select the card you will be working with. If you came from the diagnostic, your card is already selected.</p>
+    <div class="card-select-grid" id="cardSelectGrid"></div>
+    <button class="compile-btn" id="step1Btn" onclick="goStep(2)" disabled>Continue to intake &rarr;</button>
+  </div>
+
+  <!-- ── STEP 2: INTAKE ─────────────────────────────────────── -->
+  <div class="compiler-step" id="step2">
+    <span class="step-kicker">Step 2 of 4 &middot; Intake</span>
+    <h1 class="step-title">What do you <em>have?</em></h1>
+    <div class="step-rule"></div>
+    <p class="step-sub">Mark what is available. The compiler adapts the session to what you have. Nothing is required except your attention.</p>
+
+    <div class="intake-section">
+      <span class="is-label">Physical materials available</span>
+      <div class="material-grid" id="materialGrid"></div>
+    </div>
+
+    <div class="intake-section">
+      <span class="is-label">Time available</span>
+      <div class="time-grid">
+        <button class="time-opt" onclick="selectTime('5',this)">5 min</button>
+        <button class="time-opt selected" onclick="selectTime('20',this)">20 min</button>
+        <button class="time-opt" onclick="selectTime('30',this)">30 min</button>
+        <button class="time-opt" onclick="selectTime('full',this)">Full session</button>
+      </div>
+    </div>
+
+    <div class="intake-section">
+      <span class="is-label">Sound environment</span>
+      <div class="sound-grid">
+        <button class="sound-opt selected" onclick="selectSound('headphones',this)">Headphones</button>
+        <button class="sound-opt" onclick="selectSound('speaker',this)">Speaker</button>
+        <button class="sound-opt" onclick="selectSound('phone',this)">Phone only</button>
+        <button class="sound-opt" onclick="selectSound('silent',this)">Silent</button>
+        <button class="sound-opt" onclick="selectSound('outdoor',this)">Outdoor</button>
+        <button class="sound-opt" onclick="selectSound('unknown',this)">Unsure</button>
+      </div>
+    </div>
+
+    <div class="intake-section">
+      <span class="is-label">Context</span>
+      <div class="context-grid">
+        <button class="ctx-opt selected" onclick="selectCtx('solo',this)">Solo</button>
+        <button class="ctx-opt" onclick="selectCtx('facilitated',this)">With facilitator</button>
+        <button class="ctx-opt" onclick="selectCtx('first',this)">First time</button>
+        <button class="ctx-opt" onclick="selectCtx('returning',this)">Returning</button>
+        <button class="ctx-opt" onclick="selectCtx('beta',this)">Beta test</button>
+      </div>
+    </div>
+
+    <button class="compile-btn" onclick="compile()">Compile this session &rarr;</button>
+  </div>
+
+  <!-- ── STEP 3: COMPILED SESSION ──────────────────────────── -->
+  <div class="compiler-step" id="step3">
+    <span class="step-kicker">Step 3 of 4 &middot; Compiled Session</span>
+    <div class="step-rule"></div>
+
+    <div class="compiled-header">
+      <div class="ch-sigil" id="compiledSigil"></div>
+      <div class="ch-title" id="compiledTitle"></div>
+      <div class="ch-incant" id="compiledIncant"></div>
+      <div class="ch-chips" id="compiledChips"></div>
+    </div>
+
+    <div class="session-plan">
+      <div class="sp-section">
+        <span class="sp-label">Setup &mdash; what to prepare</span>
+        <div class="sp-content" id="compiledSetup"></div>
+      </div>
+      <div class="sp-section">
+        <span class="sp-label">Session steps</span>
+        <div class="sp-content" id="compiledSteps"></div>
+      </div>
+      <div class="sp-section">
+        <span class="sp-label">Done state &mdash; when this is complete enough</span>
+        <div class="done-state" id="compiledDone"></div>
+      </div>
+    </div>
+
+    <div class="timer-block">
+      <span class="tb-label">Session timer</span>
+      <div class="timer-display" id="timerDisplay">00:00</div>
+      <div class="timer-phase" id="timerPhase">Ready when you are.</div>
+      <div class="timer-btns">
+        <button class="t-btn start" id="timerStartBtn" onclick="toggleTimer()">Start</button>
+        <button class="t-btn reset" onclick="resetTimer()">Reset</button>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="a-btn primary" onclick="goStep(4)">Seal this session &rarr;</button>
+      <button class="a-btn ghost" onclick="window.print()">Print plan</button>
+      <button class="a-btn ghost" onclick="goStep(2)">&#8592; Adjust intake</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 4: RECEIPT ────────────────────────────────────── -->
+  <div class="compiler-step" id="step4">
+    <span class="step-kicker">Step 4 of 4 &middot; Session Receipt</span>
+    <h1 class="step-title">Sealed.</h1>
+    <div class="step-rule"></div>
+    <p class="step-sub" style="margin-bottom:24px;">The &#9632; contains a person. Corners are present.</p>
+
+    <div class="receipt">
+      <div class="receipt-top"></div>
+      <div class="receipt-body">
+        <div class="r-eyebrow">Ritual Compiler Output &middot; MIRROR&trade; &middot; ELARRI.AI</div>
+        <div class="r-title" id="receiptTitle"></div>
+        <div class="r-sub" id="receiptSub"></div>
+        <div class="r-row"><div class="r-lbl">Ritual</div><div class="r-val" id="rRitual"></div></div>
+        <div class="r-row"><div class="r-lbl">Incantation</div><div class="r-val" id="rIncant" style="font-family:'IM Fell English',serif;font-style:italic;font-size:15px;color:rgba(192,160,248,.9);"></div></div>
+        <div class="r-row"><div class="r-lbl">Sound key</div><div class="r-val" id="rKey"></div></div>
+        <div class="r-row"><div class="r-lbl">Materials used</div><div class="r-val" id="rMaterials"></div></div>
+        <div class="r-row"><div class="r-lbl">Context</div><div class="r-val" id="rContext"></div></div>
+        <div class="r-row"><div class="r-lbl">Timestamp</div><div class="r-val" id="rTime" style="font-family:'Space Mono',monospace;font-size:11px;"></div></div>
+        <div class="r-seal">
+          <div>
+            <div class="r-seal-id" id="rSealId"></div>
+            <div class="r-provenance">This session was compiled by the Ritual Compiler. The person herein was witnessed, held, and sealed in coherence &mdash; not compressed, reduced, or transported as a label. The &#9632; contains a person. Corners are present.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <a class="a-btn primary" id="betaSubmitBtn" href="/beta-submit">Submit scores for beta &rarr;</a>
+      <a class="a-btn ghost" href="https://memexzakhor.com" target="_blank" rel="noopener">Send to Zakhor &rarr;</a>
+      <button class="a-btn ghost" onclick="window.print()">Print receipt</button>
+      <button class="a-btn ghost" onclick="startOver()">New session</button>
+    </div>
+  </div>
+
+</div><!-- wrap -->
+
+<script>
+var CARDS = [
+  {id:'C-01',r:'R.16',name:'Mirror Audit',      key:'MS',dots:1,lane:'Public',
+   incant:'What is true right now? The mirror confirms it.',
+   keyName:'Mirror Seal',
+   purpose:'Identify what is true before any other action.',
+   requiredMaterials:[],
+   preferredMaterials:['paper','pen'],
+   signal:'What is true right now?',
+   mirror:'Name the thing you have been avoiding knowing.',
+   move:'Write one true sentence. Stop when you stop.',
+   done:'When you have written the one true sentence.',
+   sigil:'mirror-audit',
+   soundDesc:'Mirror Seal: glass tap, sub bass, whisper. Instrumental, no lyrics. Minimal.',
+   steps:{
+     orient:'Sit or stand. Take one breath. Read the Signal question: "What is true right now?"',
+     action:'Write one true sentence. One sentence. Not a list. Not an analysis. One fact you could photograph or point to.',
+     close:'Read what you wrote. If it is true, you are done. If it is not quite true, rewrite it once.'
+   }},
+  {id:'C-02',r:'R.06',name:'Memory Unbinding',  key:'BE',dots:3,lane:'Facilitator',
+   incant:'This cord fed on my clarity. I now feed on freedom.',
+   keyName:'Black Exit',
+   purpose:'Break attachment to a lie, a title, or a dead version of the story.',
+   requiredMaterials:['pen','paper'],
+   preferredMaterials:['ribbon','bowl','candle'],
+   signal:'What is still attached that was never yours?',
+   mirror:'Name the cord. One thing only.',
+   move:'Cut it once. Name what remains.',
+   done:'When you have named what remains after the cord is cut.',
+   sigil:'memory-unbinding',
+   soundDesc:'Black Exit: silence, tone drop, heel click. No melody. Hard stops only.',
+   steps:{
+     orient:'Run Mirror Audit (R.16) first — always. Then come here.',
+     action:'Write the name of the cord on paper. If you have ribbon, tie it once. If you have fire, burn it. If you have neither, tear the paper cleanly in two.',
+     close:'Name what remains after the smoke or the tear. Not the loss. What is still yours.'
+   }},
+  {id:'C-03',r:'R.15',name:'Winged Threshold',  key:'DF',dots:2,lane:'Public',
+   incant:'I cross with what I know. I leave what was not mine.',
+   keyName:'DNA Flame',
+   purpose:'Mark a crossing point and leave the price of entry behind.',
+   requiredMaterials:[],
+   preferredMaterials:['threshold'],
+   signal:'What are you crossing with?',
+   mirror:'What did you agree to carry that was not the price of entry?',
+   move:'Cross with what you know. Leave what was not yours.',
+   done:'When you are on the other side and have not looked back for 60 seconds.',
+   sigil:'winged-threshold',
+   soundDesc:'DNA Flame: heartbeat, violet swell, breath release. Rising. Body-felt bass.',
+   steps:{
+     orient:'Find a doorway, a line, or a threshold. Stand at it. Name what you are crossing into.',
+     action:'Name what you are leaving: one thing only. Speak it. Cross deliberately. Pause at the midpoint.',
+     close:'Do not look back for 60 seconds. The crossing is complete when you are on the other side and no longer facing the line.'
+   }},
+  {id:'C-04',r:'R.02',name:'Sealed Eye',         key:'MS',dots:2,lane:'Internal QA',
+   incant:'Seen by me. Not owned by them.',
+   keyName:'Mirror Seal',
+   purpose:'Lock perception. Reinforce self-image. Deny casual access.',
+   requiredMaterials:[],
+   preferredMaterials:['mirror'],
+   signal:'What have you already seen?',
+   mirror:'Name the perception you sealed.',
+   move:'Look once, clean. Then seal it.',
+   done:'When you have tapped the surface once and left.',
+   sigil:'mirror-seal',
+   soundDesc:'Mirror Seal: glass tap, sub bass, whisper. Short. Decisively closed.',
+   steps:{
+     orient:'Stand before a mirror or a reflective surface. If no mirror, close your eyes and visualize your own face.',
+     action:'Hold eye contact with your reflection for nine counts. No correction. No performance. See.',
+     close:'Tap the mirror surface once. Speak the incantation. Leave without correcting your posture.'
+   }},
+  {id:'C-05',r:'R.09',name:'DNA Flame',          key:'DF',dots:2,lane:'Public',
+   incant:'I burn for the version of me who refused to die.',
+   keyName:'DNA Flame',
+   purpose:'Re-embody survival, momentum, and chosen selfhood.',
+   requiredMaterials:['music'],
+   preferredMaterials:['barefoot','open-space'],
+   signal:'Where does your clarity live in your body?',
+   mirror:'What shape does your truest self take?',
+   move:'Stand in it. One full breath.',
+   done:'When the anthem ends and the feeling is still in your body.',
+   sigil:'dna-flame',
+   soundDesc:'DNA Flame: heartbeat, violet swell, breath release. Choose ONE track, no shuffle.',
+   steps:{
+     orient:'Bare feet if possible. Stable stance. Choose your anthem in advance — one track, not a playlist.',
+     action:'Visualize each cell lighting with violet fire from feet to crown as the music builds. Not metaphor. Instruction.',
+     close:'Seal with the final beat of the track. No shuffle. No drift after. Let the last tone leave.'
+   }},
+  {id:'C-06',r:'R.05',name:'Shadowlight Shield', key:'QF',dots:1,lane:'Public',
+   incant:'Not my burden. Not my cage.',
+   keyName:'Quiet Flame',
+   purpose:'Return energy to center. End the habit of carrying other people.',
+   requiredMaterials:[],
+   preferredMaterials:['salt','obsidian','candle'],
+   signal:'What burden was assigned to you without consent?',
+   mirror:'Name three roles you are dropping.',
+   move:'Scatter the salt. Name what remains.',
+   done:'When you have washed your hands and left the room.',
+   sigil:'shadowlight-shield',
+   soundDesc:'Quiet Flame: inhale, low drone, single spark. Under a muted heartbeat.',
+   steps:{
+     orient:'If you have salt, spiral it in a circle around you. If not, take three deep breaths and stand in your own space.',
+     action:'Name three roles you are dropping. Speak each one on a single breath. No analysis.',
+     close:'Scatter the salt or clap once. Wash your hands. Exit the room without looking back.'
+   }},
+  {id:'C-07',r:'R.08',name:'Spiral Release',     key:'BE',dots:1,lane:'Public',
+   incant:'I have left the room. Do not follow.',
+   keyName:'Black Exit',
+   purpose:'Mark departure without begging for witness or debate.',
+   requiredMaterials:[],
+   preferredMaterials:['pen','paper'],
+   signal:'What are you still present for that you already left?',
+   mirror:'Name the exit you are postponing.',
+   move:'Make one clean move. Then go silent.',
+   done:'When silence has replaced the last communication.',
+   sigil:'spiral-release',
+   soundDesc:'Black Exit: no echo, no reprise. Silence after the final tone.',
+   steps:{
+     orient:'Name the room you have already left in your mind. Not metaphor. Actual situation.',
+     action:'Make the one clean move: the final post, the bio line, the internal note, the conversation that closes. One move.',
+     close:'Then go silent. No explanation. No narration. Silence is the closing line.'
+   }},
+  {id:'C-08',r:'R.10',name:'Void Mirror',        key:'QF',dots:3,lane:'Facilitator',
+   incant:'Marked by Fire. Ruled by None.',
+   keyName:'Quiet Flame',
+   purpose:'Wear silence as armor when closure has become wasteful.',
+   requiredMaterials:[],
+   preferredMaterials:['dim-light','dark-clothing'],
+   signal:'What is this silence protecting?',
+   mirror:'Name what armor has replaced presence.',
+   move:'Leave one thing unfinished. Walk away anyway.',
+   done:'When you have walked away from the unfinished thing.',
+   sigil:'void-mirror',
+   soundDesc:'Quiet Flame with the end removed. Silence where the resolution would be.',
+   steps:{
+     orient:'Run Mirror Audit (R.16) first. Dim the light if possible. No open tabs.',
+     action:'Speak the incantation once. Close the door on one thing. Not everything. One thing.',
+     close:'Leave one thing intentionally unfinished on purpose. Walk away from it anyway. That is the close.'
+   }},
+  {id:'C-09',r:'R.01',name:'Still Crown',        key:'QF',dots:1,lane:'Operator',
+   incant:'I am not what they named me. I am the fire that renamed itself.',
+   keyName:'Quiet Flame',
+   purpose:'Claim your name before you enter the room.',
+   requiredMaterials:[],
+   preferredMaterials:[],
+   signal:'Who are you when no one is naming you?',
+   mirror:'What name is yours?',
+   move:'Say your name once. Quietly. Mean it.',
+   done:'When the name has settled in your body.',
+   sigil:'still-crown',
+   soundDesc:'Quiet Flame: inhale, low drone, single spark. Short. Before you walk in.',
+   steps:{
+     orient:'Stand still. Spine long. No mirror required.',
+     action:'Speak once in a low voice. Once at full volume. Once in complete stillness.',
+     close:'One breath in, one breath out, a final nod. You are now in your name.'
+   }},
+  {id:'C-10',r:'\u2014',name:'Black Fairy Flight',key:'DF',dots:2,lane:'Internal QA',
+   incant:'Na tan-te en fa sel.',
+   keyName:'DNA Flame',
+   purpose:'Step into open space after a threshold has been crossed.',
+   requiredMaterials:[],
+   preferredMaterials:['open-space'],
+   signal:'What direction is up right now?',
+   mirror:'What threshold have you already crossed?',
+   move:'Face the open space. Take one step into it.',
+   done:'When your body is facing the open direction.',
+   sigil:'bf-flight',
+   soundDesc:'DNA Flame: ascending. Rising bass. Body-felt frequency.',
+   steps:{
+     orient:'Name the threshold you already crossed. Not the one ahead. The one behind you.',
+     action:'Name one direction that is open from where you now stand. Turn to face it.',
+     close:'Take one deliberate step into the open space. The session ends here.'
+   }},
+  {id:'C-11',r:'R.17',name:'The Line Remains',   key:'TH',dots:3,lane:'Facilitator',
+   incant:'The false shapes fall. The line remains.',
+   keyName:'Too Hot',
+   purpose:'Name the false shape after it collapses. Hold the line.',
+   requiredMaterials:['pen','paper'],
+   preferredMaterials:[],
+   signal:'What false shape has collapsed?',
+   mirror:'Name what was never true.',
+   move:'Name the line. Let it stand.',
+   done:'After a 24-hour hold. Not before.',
+   sigil:'line-remains',
+   soundDesc:'Too Hot: click, spark, bass hit, hush. Speak before the sound ends.',
+   steps:{
+     orient:'Write the false shape on paper before speaking. Not after. Before.',
+     action:'Speak the incantation once only. Not twice. Once.',
+     close:'24-hour hold after. Do not repeat the false name. Do not narrate what you did.'
+   }},
+  {id:'C-12',r:'R.12',name:'Return to Violet',   key:'BE',dots:1,lane:'Internal QA',
+   incant:'En del-te rola. Ellari.',
+   keyName:'Black Exit',
+   purpose:'Return to the original knowing before the noise entered.',
+   requiredMaterials:[],
+   preferredMaterials:['pen','paper'],
+   signal:'What did you already know before the noise?',
+   mirror:'Name the original knowing.',
+   move:'Return to it. One quiet decision.',
+   done:'When you have made the one quiet decision.',
+   sigil:'return-violet',
+   soundDesc:'Black Exit: silence. Possibly no music at all for this one.',
+   steps:{
+     orient:'Sit quietly. Name the original knowing — what you knew before their version entered.',
+     action:'Write it or speak it. Not what you were told. What you already knew.',
+     close:'Make one quiet decision that returns to that knowing. No announcement required.'
+   }},
+  {id:'C-13',r:'\u2014',name:'Done for Now',     key:'MS',dots:1,lane:'Public',
+   incant:'Zakhor.',
+   keyName:'Mirror Seal',
+   purpose:'Complete the session enough to set it down.',
+   requiredMaterials:[],
+   preferredMaterials:[],
+   signal:'Is this complete enough to set down?',
+   mirror:'Name what completion looks like for today.',
+   move:'Set it down. Rest.',
+   done:'When you have set it down and rested.',
+   sigil:'done-for-now',
+   soundDesc:'Mirror Seal: glass tap. One tap. Then silence.',
+   steps:{
+     orient:'Name what completion looks like for today. Not perfection. Completion enough.',
+     action:'Speak the word: Zakhor. Once.',
+     close:'Set it down. This means: close the tab, put down the object, stop the conversation.'
+   }},
+];
+
+var MATERIALS = [
+  {id:'mirror',     name:'Mirror'},
+  {id:'candle',     name:'Candle or lamp'},
+  {id:'salt',       name:'Black salt'},
+  {id:'obsidian',   name:'Obsidian or stone'},
+  {id:'ribbon',     name:'Black ribbon'},
+  {id:'bowl',       name:'Heat-safe bowl'},
+  {id:'pen',        name:'Pen'},
+  {id:'paper',      name:'Paper'},
+  {id:'barefoot',   name:'Bare feet / floor space'},
+  {id:'open-space', name:'Open room or doorway'},
+  {id:'threshold',  name:'Doorway or threshold'},
+  {id:'dim-light',  name:'Dimmable or low light'},
+  {id:'dark-clothing', name:'Dark clothing'},
+  {id:'music',      name:'Music source'},
+];
+
+var SIGIL_PATHS = {
+  'mirror-audit':'<circle cx="100" cy="112" r="72"/><circle cx="100" cy="112" r="46"/><circle cx="100" cy="112" r="22"/><path d="M100 28 L114 52 L86 52 Z"/><line x1="100" y1="52" x2="100" y2="90"/>',
+  'memory-unbinding':'<path d="M32 100 C52 68,82 68,100 100 C118 132,148 132,168 100"/><line x1="86" y1="72" x2="114" y2="128" stroke-width="4"/><line x1="86" y1="128" x2="74" y2="148"/><line x1="86" y1="128" x2="100" y2="150"/><line x1="114" y1="72" x2="100" y2="50"/><line x1="114" y1="72" x2="128" y2="48"/>',
+  'winged-threshold':'<line x1="30" y1="100" x2="170" y2="100"/><path d="M95 100 C55 55,20 70,22 112 C52 120,76 112,95 100 Z"/><path d="M105 100 C145 55,180 70,178 112 C148 120,124 112,105 100 Z"/><line x1="100" y1="55" x2="100" y2="145"/>',
+  'mirror-seal':'<circle cx="100" cy="100" r="72"/><path d="M35 100 C60 60,140 60,165 100 C140 140,60 140,35 100 Z"/><circle cx="100" cy="100" r="18"/><line x1="100" y1="25" x2="100" y2="175"/>',
+  'dna-flame':'<path d="M100 172 C55 130,84 92,100 72 C116 92,145 130,100 172 Z"/><path d="M75 155 C125 128,125 82,75 55"/><path d="M125 155 C75 128,75 82,125 55"/><line x1="83" y1="77" x2="117" y2="77"/><line x1="78" y1="105" x2="122" y2="105"/><line x1="85" y1="132" x2="115" y2="132"/>',
+  'shadowlight-shield':'<path d="M100 25 L158 52 L140 145 L100 176 L60 145 L42 52 Z"/><line x1="100" y1="45" x2="100" y2="154"/><circle cx="100" cy="98" r="16"/><path d="M70 98 C85 78,115 78,130 98 C115 118,85 118,70 98 Z"/>',
+  'spiral-release':'<circle cx="100" cy="100" r="74"/><path d="M100 95 a5 5 0 1 0 0 10 a15 15 0 1 0 0 -30 a28 28 0 1 0 0 56 a42 42 0 1 0 0 -84 a58 58 0 1 0 0 116"/>',
+  'void-mirror':'<rect x="58" y="25" width="84" height="150" rx="6"/><rect x="70" y="38" width="60" height="124" rx="3"/><line x1="52" y1="180" x2="148" y2="12" stroke-width="4.5"/>',
+  'still-crown':'<path d="M55 88 L72 55 L90 76 L100 58 L110 76 L128 55 L145 88"/><line x1="30" y1="100" x2="170" y2="100"/><circle cx="100" cy="100" r="7" stroke-width="7"/>',
+  'bf-flight':'<line x1="40" y1="165" x2="160" y2="35"/><path d="M100 72 C75 55,42 68,48 105"/><path d="M100 72 C125 55,158 68,152 105"/><circle cx="100" cy="118" r="8"/>',
+  'line-remains':'<line x1="100" y1="18" x2="100" y2="182"/><path d="M100 40 A62 62 0 0 1 162 100"/><path d="M100 160 A62 62 0 0 1 38 100"/><circle cx="100" cy="100" r="8"/>',
+  'return-violet':'<line x1="100" y1="28" x2="100" y2="62"/><path d="M100 64 m32 0 a32 32 0 1 1 -64 0 a22 22 0 1 0 44 0 a12 12 0 1 1 -24 0 a4 4 0 1 0 8 0"/><ellipse cx="100" cy="145" rx="52" ry="18"/>',
+  'done-for-now':'<line x1="20" y1="100" x2="162" y2="100"/><circle cx="178" cy="100" r="10"/><line x1="95" y1="68" x2="95" y2="132" stroke-width="1.5" stroke-opacity=".35"/>',
+};
+
+function mkSigil(id, s) {
+  s = s || '#c9c4cf';
+  var p = SIGIL_PATHS[id] || '';
+  return '<svg viewBox="0 0 200 200" width="80" height="80" style="overflow:visible;display:block;" preserveAspectRatio="xMidYMid meet"><g fill="none" stroke="' + s + '" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">' + p + '</g></svg>';
+}
+
+// ── STATE ──────────────────────────────────────────────────────
+var state = {
+  cardIdx: null,
+  materials: {},
+  time: '20',
+  sound: 'headphones',
+  ctx: 'solo',
+  currentStep: 1,
+};
+
+// ── INIT ───────────────────────────────────────────────────────
+function init() {
+  renderCardSelect();
+  renderMaterials();
+  checkURLParams();
+}
+
+function checkURLParams() {
+  var params = new URLSearchParams(window.location.search);
+  var cardParam = params.get('card') || params.get('ritual');
+  if (!cardParam) return;
+  for (var i = 0; i < CARDS.length; i++) {
+    var c = CARDS[i];
+    if (c.sigil === cardParam || c.r === cardParam ||
+        c.name.toLowerCase().replace(/\s/g,'-') === cardParam.toLowerCase()) {
+      selectCard(i);
+      break;
+    }
+  }
+}
+
+function renderCardSelect() {
+  var html = '';
+  for (var i = 0; i < CARDS.length; i++) {
+    var c = CARDS[i];
+    var sel = state.cardIdx === i ? ' selected' : '';
+    html += '<div class="card-opt' + sel + '" onclick="selectCard(' + i + ')">'
+          + '<div class="co-name">' + c.name + '</div>'
+          + '<div class="co-meta">' + c.id + ' &middot; ' + c.r + ' &middot; ' + c.lane + '</div>'
+          + '</div>';
+  }
+  document.getElementById('cardSelectGrid').innerHTML = html;
+  document.getElementById('step1Btn').disabled = state.cardIdx === null;
+}
+
+function renderMaterials() {
+  var html = '';
+  for (var i = 0; i < MATERIALS.length; i++) {
+    var m = MATERIALS[i];
+    var chk = state.materials[m.id] ? ' checked' : '';
+    html += '<div class="mat-item' + chk + '" onclick="toggleMat(\'' + m.id + '\')">'
+          + '<div class="mat-cb"><span class="mat-check">&#10003;</span></div>'
+          + '<span class="mat-name">' + m.name + '</span>'
+          + '</div>';
+  }
+  document.getElementById('materialGrid').innerHTML = html;
+}
+
+function selectCard(i) {
+  state.cardIdx = i;
+  renderCardSelect();
+}
+
+function toggleMat(id) {
+  state.materials[id] = !state.materials[id];
+  renderMaterials();
+}
+
+function selectTime(t, btn) {
+  state.time = t;
+  document.querySelectorAll('.time-opt').forEach(function(b){b.classList.toggle('selected',b===btn);});
+}
+
+function selectSound(s, btn) {
+  state.sound = s;
+  document.querySelectorAll('.sound-opt').forEach(function(b){b.classList.toggle('selected',b===btn);});
+}
+
+function selectCtx(c, btn) {
+  state.ctx = c;
+  document.querySelectorAll('.ctx-opt').forEach(function(b){b.classList.toggle('selected',b===btn);});
+}
+
+function goStep(n) {
+  state.currentStep = n;
+  for (var i = 1; i <= 4; i++) {
+    document.getElementById('step'+i).classList.toggle('active', i === n);
+    var pd = document.getElementById('pd'+(i-1));
+    if (i < n) pd.className = 'prog-dot done';
+    else if (i === n) pd.className = 'prog-dot active';
+    else pd.className = 'prog-dot';
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── COMPILE ────────────────────────────────────────────────────
+function compile() {
+  if (state.cardIdx === null) return;
+  var c = CARDS[state.cardIdx];
+  var haveMaterials = [];
+  var missingRequired = [];
+
+  for (var m in state.materials) {
+    if (state.materials[m]) haveMaterials.push(m);
+  }
+  for (var i = 0; i < c.requiredMaterials.length; i++) {
+    if (!state.materials[c.requiredMaterials[i]]) missingRequired.push(c.requiredMaterials[i]);
+  }
+
+  // Sigil
+  document.getElementById('compiledSigil').innerHTML = mkSigil(c.sigil, '#b080e8');
+  document.getElementById('compiledTitle').textContent = c.name;
+  document.getElementById('compiledIncant').textContent = '\u201c' + c.incant + '\u201d';
+
+  // Chips
+  var timeLabel = {5:'5 min',20:'20 min',30:'30 min',full:'Full'}[state.time] || state.time;
+  var chips = '<span class="ch-chip chip-k">' + c.key + ' \u00b7 ' + c.keyName + '</span>'
+            + '<span class="ch-chip chip-t">' + timeLabel + '</span>'
+            + '<span class="ch-chip chip-v">' + c.lane + '</span>';
+  if (missingRequired.length > 0) {
+    chips += '<span class="ch-chip chip-warn">adapted \u2014 missing: ' + missingRequired.join(', ') + '</span>';
+  }
+  document.getElementById('compiledChips').innerHTML = chips;
+
+  // Setup
+  var setupItems = '';
+  // List what they have that's relevant
+  var allMats = c.requiredMaterials.concat(c.preferredMaterials);
+  var usedMats = [];
+  for (var j = 0; j < allMats.length; j++) {
+    var matId = allMats[j];
+    var matName = getMaterialName(matId);
+    if (state.materials[matId]) {
+      usedMats.push(matName);
+      setupItems += '<div class="setup-item">' + matName + '</div>';
+    } else if (c.requiredMaterials.indexOf(matId) >= 0) {
+      setupItems += '<div class="setup-item sub">' + matName + ' (not available \u2014 substitute below)</div>';
+    }
+  }
+  if (state.sound !== 'silent' && state.sound !== 'unknown') {
+    setupItems += '<div class="setup-item">Sound: ' + c.soundDesc + '</div>';
+  } else {
+    setupItems += '<div class="setup-item sub">Sound: silent session \u2014 breathe instead of cuing music</div>';
+  }
+  if (!setupItems) setupItems = '<div class="setup-item">Nothing physical required. Attention is the only tool.</div>';
+  document.getElementById('compiledSetup').innerHTML = '<div class="setup-items">' + setupItems + '</div>';
+
+  // Steps — adapt based on materials and time
+  var shortMode = state.time === '5';
+  var steps = buildAdaptedSteps(c, haveMaterials, missingRequired, shortMode);
+  document.getElementById('compiledSteps').innerHTML = steps;
+
+  // Done state
+  document.getElementById('compiledDone').textContent = c.done;
+
+  // Timer
+  var mins = {5:5, 20:20, 30:30, full:45}[state.time] || 20;
+  timerTotal = mins * 60;
+  timerLeft = timerTotal;
+  updateTimerDisplay();
+
+  goStep(3);
+}
+
+function buildAdaptedSteps(c, have, missing, shortMode) {
+  var html = '<div class="step-list">';
+  var steps = [];
+
+  // Orient
+  steps.push({phase:'Orient', text: shortMode ? ('Take one breath. ' + c.signal) : c.steps.orient});
+  // Action
+  var action = c.steps.action;
+  if (missing.length > 0) {
+    // Provide substitution
+    var subs = {
+      'ribbon': 'No ribbon \u2014 tear the paper cleanly instead.',
+      'bowl': 'No bowl \u2014 tear the paper and let it scatter.',
+      'salt': 'No salt \u2014 use water on your hands instead.',
+      'mirror': 'No mirror \u2014 close your eyes and use your mind\'s reflection.',
+      'candle': 'No candle \u2014 use a phone screen turned to full white as your light source.',
+    };
+    for (var i = 0; i < missing.length; i++) {
+      if (subs[missing[i]]) action += ' ' + subs[missing[i]];
+    }
+  }
+  steps.push({phase:'Action', text: action});
+  // Close
+  steps.push({phase:'Close', text: c.steps.close});
+  // Done
+  if (!shortMode) {
+    steps.push({phase:'Seal', text: 'Speak the incantation once: \u201c' + c.incant + '\u201d'});
+  }
+
+  for (var j = 0; j < steps.length; j++) {
+    html += '<div class="step-item">'
+          + '<div class="si-num">0' + (j+1) + '</div>'
+          + '<div><div class="si-text">' + steps[j].text + '</div>'
+          + '<div class="si-phase">' + steps[j].phase + '</div></div>'
+          + '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function getMaterialName(id) {
+  for (var i = 0; i < MATERIALS.length; i++) {
+    if (MATERIALS[i].id === id) return MATERIALS[i].name;
+  }
+  return id;
+}
+
+// ── TIMER ──────────────────────────────────────────────────────
+var timerTotal = 1200, timerLeft = 1200;
+var timerInterval = null, timerRunning = false;
+
+function updateTimerDisplay() {
+  var m = Math.floor(timerLeft / 60);
+  var s = timerLeft % 60;
+  document.getElementById('timerDisplay').textContent =
+    (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  var pct = 1 - (timerLeft / timerTotal);
+  var phases = ['Orient (0\u201325%)', 'Action (25\u201375%)', 'Close (75\u2013100%)'];
+  var phase = pct < .25 ? phases[0] : pct < .75 ? phases[1] : phases[2];
+  if (timerLeft <= 0) phase = 'Session complete.';
+  document.getElementById('timerPhase').textContent = phase;
+}
+
+function toggleTimer() {
+  if (timerLeft <= 0) return;
+  timerRunning = !timerRunning;
+  document.getElementById('timerStartBtn').textContent = timerRunning ? 'Pause' : 'Resume';
+  if (timerRunning) {
+    timerInterval = setInterval(function() {
+      if (timerLeft > 0) { timerLeft--; updateTimerDisplay(); }
+      else { clearInterval(timerInterval); timerRunning = false; document.getElementById('timerStartBtn').textContent = 'Done'; }
+    }, 1000);
+  } else {
+    clearInterval(timerInterval);
+  }
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerLeft = timerTotal;
+  document.getElementById('timerStartBtn').textContent = 'Start';
+  updateTimerDisplay();
+}
+
+// ── RECEIPT ────────────────────────────────────────────────────
+
+// ── RECEIPT ─────────────────────────────────────────────────────────────────
+function buildReceipt() {
+  if (state.cardIdx === null) return;
+  var c = CARDS[state.cardIdx];
+  var haveMats = [];
+  for (var m in state.materials) { if (state.materials[m]) haveMats.push(getMaterialName(m)); }
+  var sealId = Math.random().toString(16).slice(2,10).toUpperCase();
+  var ts = new Date().toISOString().replace('T',' ').slice(0,19) + ' UTC';
+  document.getElementById('receiptTitle').textContent = c.name;
+  document.getElementById('receiptSub').textContent = 'Compiled session · ' + c.r + ' · ' + c.lane;
+  document.getElementById('rRitual').textContent = c.r + ' · ' + c.name + ' · Intensity ' + c.dots + '/3';
+  document.getElementById('rIncant').textContent = c.incant;
+  document.getElementById('rKey').textContent = c.key + ' · ' + c.keyName;
+  document.getElementById('rMaterials').textContent = haveMats.length ? haveMats.join(', ') : 'None required';
+  document.getElementById('rContext').textContent = state.ctx + ' · ' + state.time + ' min · sound: ' + state.sound;
+  document.getElementById('rTime').textContent = ts;
+  document.getElementById('rSealId').textContent = 'SEAL ID: RC-' + sealId;
+  document.getElementById('betaSubmitBtn').href = '/beta-submit?card=' + encodeURIComponent(c.name);
+}
+
+function startOver() {
+  state = {cardIdx:null, materials:{}, time:'20', sound:'headphones', ctx:'solo', currentStep:1};
+  resetTimer();
+  renderCardSelect();
+  renderMaterials();
+  document.querySelectorAll('.time-opt').forEach(function(b){b.classList.toggle('selected',b.textContent.trim()==='20 min');});
+  document.querySelectorAll('.sound-opt').forEach(function(b){b.classList.toggle('selected',b.textContent.trim()==='Headphones');});
+  document.querySelectorAll('.ctx-opt').forEach(function(b){b.classList.toggle('selected',b.textContent.trim()==='Solo');});
+  goStep(1);
+}
+
+init();
+

@@ -10,3 +10,5 @@
 /beta-account    /BF_BetaAuth.html          200
 /beta-dashboard  /BF_BetaDashboard.html     200
 /beta-admin      /BF_AdminDashboard.html    200
+/ritual-compiler  /BF_RitualCompiler.html  200
+/compile          /BF_RitualCompiler.html  200
