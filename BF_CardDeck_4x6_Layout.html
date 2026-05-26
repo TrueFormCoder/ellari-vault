@@ -8,203 +8,276 @@
 <style>
 :root{
   --void:#050407;--panel:#0e0b16;--border:#252040;
-  --silver:#c9c4cf;--violet:#9060c8;--mist:#484060;
-  --white:#ede8f8;
+  --silver:#c9c4cf;--mist:#484060;--white:#ede8f8;
+  --bleed-bg:#030205;
+  --cut-line:rgba(201,196,207,.12);
+  --safe-line:rgba(144,96,200,.1);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#1a1628;color:var(--white);font-family:'Cormorant Garamond',serif;font-size:15px;}
+body{background:#161224;color:var(--white);font-family:'Cormorant Garamond',serif;}
 
-/* HEADER */
+/* ── HEADER ────────────────────────────────────────────────────── */
 .hdr{
   position:sticky;top:0;z-index:100;
-  background:rgba(5,4,7,.96);backdrop-filter:blur(12px);
+  background:rgba(5,4,7,.96);backdrop-filter:blur(14px);
   border-bottom:1px solid rgba(36,32,64,.8);
-  padding:0 28px;height:52px;
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  padding:0 24px;height:52px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
 }
-.hdr-brand{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:#7a7890;text-transform:uppercase;}
-.hdr-title{font-size:14px;font-weight:300;letter-spacing:.1em;color:var(--silver);}
-.hdr-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
-.ctrl-btn{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;
-  padding:5px 11px;border-radius:3px;cursor:pointer;background:transparent;transition:all .2s;}
-.ctrl-btn.active{color:var(--silver);border:1px solid rgba(201,196,207,.4);background:rgba(201,196,207,.05);}
-.ctrl-btn.inactive{color:var(--mist);border:1px solid rgba(36,32,64,.8);}
-.ctrl-btn:hover:not(.active){border-color:var(--mist);color:#9090a8;}
-.view-btn{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;
-  padding:5px 11px;border-radius:3px;cursor:pointer;background:transparent;
-  border:1px solid rgba(36,32,64,.8);color:var(--mist);transition:all .2s;}
-.view-btn.on{color:var(--violet);border-color:rgba(144,96,200,.4);}
+.hdr-left{display:flex;flex-direction:column;gap:1px;}
+.hdr-brand{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.3em;color:#484060;text-transform:uppercase;}
+.hdr-title{font-size:13px;font-weight:300;letter-spacing:.08em;color:var(--silver);}
+.hdr-right{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
 
-/* GRID */
-.grid{display:flex;flex-wrap:wrap;gap:20px;padding:28px;justify-content:center;}
+/* buttons */
+.btn{
+  font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;
+  padding:5px 10px;border-radius:2px;cursor:pointer;background:transparent;transition:all .15s;
+}
+.btn-lane{border:1px solid rgba(36,32,64,.8);color:var(--mist);}
+.btn-lane.on{border-color:rgba(201,196,207,.35);color:var(--silver);background:rgba(201,196,207,.04);}
+.btn-lane:hover:not(.on){border-color:var(--mist);color:#9090a8;}
+.btn-action{border:1px solid rgba(80,60,128,.4);color:#9878d0;}
+.btn-action.on{background:rgba(80,60,128,.18);color:#c0a0f8;}
+.btn-action:hover{background:rgba(80,60,128,.1);}
+.sep{width:1px;height:18px;background:rgba(36,32,64,.8);margin:0 2px;}
 
-/* CARD WRAPPER */
-.card-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;}
+/* ── GRID ──────────────────────────────────────────────────────── */
+.grid{display:flex;flex-wrap:wrap;gap:24px;padding:28px;justify-content:center;}
+.grid.compact{gap:14px;padding:20px;}
+.grid.oneup{flex-direction:column;align-items:center;gap:32px;padding:32px;}
+
+/* ── CARD WRAP ─────────────────────────────────────────────────── */
+.cw{display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;}
 .cw-label{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.2em;color:var(--mist);text-transform:uppercase;}
 
-/* ── THE CARD — 4:6 ratio ─────────────────────────────────── */
-.card{
-  width:280px;height:420px;
-  position:relative;overflow:hidden;border-radius:8px;
-  background:var(--void);
+/* ═══════════════════════════════════════════════════════════════
+   CELL-IN-CELL PRINT LAYOUT
+   ┌── BLEED (outer) ──────────────────────────────────────────┐
+   │   12px bleed on all sides — background bleeds past cut    │
+   │  ┌── CARD FACE (cut line) ──────────────────────────────┐ │
+   │  │   actual 4×6 card dimensions                         │ │
+   │  │  ┌── SAFE ZONE ──────────────────────────────────── ┐ │ │
+   │  │  │  14px inset — all content lives here             │ │ │
+   │  │  └──────────────────────────────────────────────────┘ │ │
+   │  └──────────────────────────────────────────────────────┘ │
+   └───────────────────────────────────────────────────────────┘
+═══════════════════════════════════════════════════════════════ */
+
+/* BLEED CONTAINER — background continues past cut line */
+.card-bleed{
+  width:304px;            /* card face 280 + 12px bleed each side */
+  height:444px;           /* card face 420 + 12px bleed each side */
+  position:relative;
+  background:var(--bleed-bg);
+  border-radius:4px;
   transition:transform .2s,box-shadow .2s;
-  box-shadow:0 4px 32px rgba(0,0,0,.6);
+  box-shadow:0 4px 32px rgba(0,0,0,.7);
 }
-.card:hover{transform:scale(1.02);box-shadow:0 8px 48px rgba(0,0,0,.8);}
-.card.selected{box-shadow:0 0 0 2px rgba(144,96,200,.6),0 8px 48px rgba(0,0,0,.8);}
+.cw:hover .card-bleed{transform:scale(1.015);box-shadow:0 8px 48px rgba(0,0,0,.85);}
+.cw.selected .card-bleed{box-shadow:0 0 0 2px rgba(144,96,200,.55),0 8px 48px rgba(0,0,0,.85);}
 
-/* Art plate */
-.card-art{
-  position:absolute;inset:0;z-index:0;
+/* Bleed art — background that extends past cut */
+.bleed-art{
+  position:absolute;inset:0;border-radius:4px;z-index:0;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 30%,rgba(112,48,200,.22) 0%,rgba(80,32,160,.1) 40%,transparent 70%),
-    radial-gradient(ellipse 50% 35% at 50% 55%,rgba(64,24,120,.08) 0%,transparent 55%),
-    linear-gradient(180deg,#070510 0%,#04030a 100%);
+    radial-gradient(ellipse 90% 70% at 50% 25%,rgba(104,40,192,.28) 0%,rgba(72,24,148,.12) 45%,transparent 72%),
+    radial-gradient(ellipse 55% 40% at 50% 65%,rgba(56,20,112,.1) 0%,transparent 60%),
+    linear-gradient(180deg,#060410 0%,#030208 100%);
 }
-.card-art::after{
-  content:'';position:absolute;inset:0;opacity:.04;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size:100px;
+.bleed-art::after{
+  content:'';position:absolute;inset:0;border-radius:4px;opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:110px;
 }
 
-/* Border */
-.card-border{position:absolute;inset:8px;border:1px solid rgba(201,196,207,.15);border-radius:4px;z-index:1;pointer-events:none;}
+/* CARD FACE — the actual cut card (280×420) */
+.card-face{
+  position:absolute;
+  top:12px;left:12px;
+  width:280px;height:420px;
+  border-radius:6px;
+  overflow:hidden;
+  z-index:1;
+  /* cut line indicator — very faint, proof only */
+  box-shadow:0 0 0 1px var(--cut-line);
+}
 
-/* Card number — top left */
+/* Safe-zone guide (toggled via .show-guides class on body) */
+.card-face::after{
+  content:'';
+  position:absolute;
+  top:14px;left:14px;right:14px;bottom:14px;
+  border:1px dashed var(--safe-line);
+  border-radius:2px;
+  z-index:8;
+  pointer-events:none;
+  opacity:0;transition:opacity .2s;
+}
+body.show-guides .card-face::after{opacity:1;}
+
+/* CROP MARKS — appear outside bleed on body.show-marks */
+.crop-marks{
+  position:absolute;inset:-10px;z-index:9;pointer-events:none;display:none;
+}
+body.show-marks .crop-marks{display:block;}
+.cm{position:absolute;background:rgba(201,196,207,.45);}
+/* Top-left */
+.cm-tl-h{top:10px;left:0;width:8px;height:0.5px;}
+.cm-tl-v{top:0;left:10px;width:0.5px;height:8px;}
+/* Top-right */
+.cm-tr-h{top:10px;right:0;width:8px;height:0.5px;}
+.cm-tr-v{top:0;right:10px;width:0.5px;height:8px;}
+/* Bottom-left */
+.cm-bl-h{bottom:10px;left:0;width:8px;height:0.5px;}
+.cm-bl-v{bottom:0;left:10px;width:0.5px;height:8px;}
+/* Bottom-right */
+.cm-br-h{bottom:10px;right:0;width:8px;height:0.5px;}
+.cm-br-v{bottom:0;right:10px;width:0.5px;height:8px;}
+
+/* ── CARD FACE INTERNALS ────────────────────────────────────── */
+/* Card number */
 .card-num{
-  position:absolute;top:12px;left:14px;z-index:5;
+  position:absolute;top:18px;left:20px;z-index:5;
   font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.2em;
-  color:rgba(201,196,207,.38);text-transform:uppercase;
+  color:rgba(201,196,207,.36);text-transform:uppercase;
 }
-
-/* Lane badge — top right */
+/* Lane badge */
 .card-lane{
-  position:absolute;top:12px;right:14px;z-index:5;
-  font-family:'Space Mono',monospace;font-size:6.5px;letter-spacing:.15em;
-  padding:2px 6px;border-radius:2px;text-transform:uppercase;
+  position:absolute;top:16px;right:18px;z-index:5;
+  font-family:'Space Mono',monospace;font-size:6.5px;letter-spacing:.14em;
+  padding:2px 7px;border-radius:2px;text-transform:uppercase;
 }
-.lane-public{color:#60c898;border:1px solid rgba(96,200,152,.25);}
+.lane-public     {color:#60c898;border:1px solid rgba(96,200,152,.25);}
 .lane-facilitator{color:rgba(192,160,248,.8);border:1px solid rgba(152,96,216,.2);}
-.lane-operator{color:rgba(201,196,207,.6);border:1px solid rgba(201,196,207,.15);}
-.lane-qa{color:rgba(74,68,96,.8);border:1px solid rgba(74,68,96,.3);}
+.lane-operator   {color:rgba(201,196,207,.6);border:1px solid rgba(201,196,207,.15);}
+.lane-qa         {color:rgba(74,68,96,.75);border:1px solid rgba(74,68,96,.3);}
 
-/* ── SIGIL — properly centered in dome area ─────────────── */
+/* SIGIL — flex-centered in dome area */
 .card-sigil-area{
   position:absolute;
-  top:0;left:0;right:0;
-  height:46%;          /* dome visual region */
-  z-index:3;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding-top:28px;    /* clear the card-num bar */
+  top:0;left:0;right:0;height:46%;
+  z-index:4;
+  display:flex;align-items:center;justify-content:center;
+  padding-top:30px;
   pointer-events:none;
 }
 .card-sigil{
   width:88px;height:88px;
-  opacity:.72;
-  transition:opacity .2s;
+  opacity:.74;transition:opacity .2s;
   flex-shrink:0;
 }
 .card-sigil svg{width:100%;height:100%;overflow:visible;display:block;}
-.card:hover .card-sigil,.card.selected .card-sigil{opacity:1;}
+.cw:hover .card-sigil,.cw.selected .card-sigil{opacity:1;}
 
-/* Lower third gradient */
+/* Lower gradient */
 .card-lower{
   position:absolute;bottom:0;left:0;right:0;height:60%;z-index:2;
-  background:linear-gradient(
-    0deg,
-    rgba(4,3,7,0.99) 0%,
-    rgba(4,3,7,0.96) 35%,
-    rgba(4,3,7,0.82) 60%,
-    rgba(4,3,7,0.3)  80%,
+  background:linear-gradient(0deg,
+    rgba(4,3,7,.99) 0%,
+    rgba(4,3,7,.97) 30%,
+    rgba(4,3,7,.88) 52%,
+    rgba(4,3,7,.55) 70%,
+    rgba(4,3,7,.18) 85%,
     transparent 100%
   );
 }
 
-/* Card content */
-.card-content{position:absolute;bottom:0;left:0;right:0;z-index:4;padding:0 15px 12px;}
-
-/* Title */
-.card-title{
-  font-size:15.5px;font-weight:300;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--silver);text-align:center;margin-bottom:6px;line-height:1.1;
+/* CONTENT — inside safe zone (14px from card face edges) */
+.card-content{
+  position:absolute;
+  bottom:14px;left:14px;right:14px;
+  z-index:5;
 }
-
-/* Divider */
-.card-div{width:28px;height:1px;background:rgba(201,196,207,.18);margin:0 auto 6px;}
-
-/* Chips row — sound key + intensity */
-.card-chips{display:flex;gap:6px;justify-content:center;margin-bottom:7px;align-items:center;}
+.card-title{
+  font-size:15px;font-weight:300;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--silver);text-align:center;margin-bottom:5px;line-height:1.1;
+}
+.card-div{width:26px;height:1px;background:rgba(201,196,207,.18);margin:0 auto 5px;}
+.card-chips{display:flex;gap:5px;justify-content:center;margin-bottom:6px;align-items:center;}
 .chip-key{
   font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.2em;
-  color:rgba(160,112,220,.75);padding:2px 5px;
-  border:1px solid rgba(144,96,200,.2);border-radius:2px;
+  color:rgba(160,112,220,.78);padding:2px 5px;
+  border:1px solid rgba(144,96,200,.22);border-radius:2px;
 }
-.chip-int{font-family:'Space Mono',monospace;font-size:7px;color:rgba(201,196,207,.3);letter-spacing:.05em;}
-
-/* Signal / Mirror / Move */
-.card-fields{display:flex;flex-direction:column;gap:5px;}
+.chip-int{font-family:'Space Mono',monospace;font-size:7px;color:rgba(201,196,207,.28);letter-spacing:.05em;}
+.card-fields{display:flex;flex-direction:column;gap:4px;}
 .cf-row{display:flex;flex-direction:column;gap:1px;}
 .cf-label{
-  font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.28em;
-  text-transform:uppercase;color:rgba(160,112,220,.8);
+  font-family:'Space Mono',monospace;font-size:5.5px;letter-spacing:.28em;
+  text-transform:uppercase;color:rgba(160,112,220,.82);
 }
-.cf-text{font-size:9.5px;color:rgba(201,196,207,.82);line-height:1.38;}
-
-/* Footer */
+.cf-text{font-size:9px;color:rgba(201,196,207,.84);line-height:1.4;}
 .card-footer{
   position:absolute;bottom:7px;left:50%;transform:translateX(-50%);z-index:5;
   font-family:'Space Mono',monospace;font-size:5.5px;letter-spacing:.18em;
-  color:rgba(80,72,104,.5);text-transform:uppercase;white-space:nowrap;
+  color:rgba(80,72,104,.48);text-transform:uppercase;white-space:nowrap;
 }
 
-/* ── CARD BACK ─────────────────────────────────────────── */
+/* ── CARD BACK ─────────────────────────────────────────────── */
 .card-back{
   position:absolute;inset:0;background:var(--void);z-index:10;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
-  opacity:0;pointer-events:none;transition:opacity .2s;border-radius:8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;
+  opacity:0;pointer-events:none;transition:opacity .2s;
 }
 .card-back.show{opacity:1;pointer-events:all;}
-.cb-seal{opacity:.6;}
-.cb-phrase{font-family:'IM Fell English',serif;font-style:italic;font-size:14px;color:rgba(201,196,207,.55);}
-.cb-rule{width:24px;height:1px;background:rgba(201,196,207,.18);}
-.cb-mark{font-family:'Space Mono',monospace;font-size:6.5px;letter-spacing:.22em;color:rgba(74,68,96,.6);text-transform:uppercase;}
+.cb-phrase{font-family:'IM Fell English',serif;font-style:italic;font-size:13px;color:rgba(201,196,207,.5);}
+.cb-rule{width:22px;height:1px;background:rgba(201,196,207,.16);}
+.cb-mark{font-family:'Space Mono',monospace;font-size:6px;letter-spacing:.22em;color:rgba(74,68,96,.58);text-transform:uppercase;}
 
-/* ── DETAIL PANEL ─────────────────────────────────────── */
-.detail{display:none;max-width:620px;margin:0 auto 40px;padding:0 28px;}
+/* ── DETAIL PANEL ──────────────────────────────────────────── */
+.detail{display:none;max-width:640px;margin:0 auto 40px;padding:0 24px;}
 .detail.show{display:block;}
-.dp-card{background:var(--panel);border:1px solid rgba(36,32,64,.8);border-radius:6px;padding:22px;}
+.dp-card{background:var(--panel);border:1px solid rgba(36,32,64,.8);border-radius:5px;padding:22px;}
 .dp-num{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.3em;color:var(--mist);text-transform:uppercase;margin-bottom:5px;}
-.dp-name{font-size:22px;font-weight:300;letter-spacing:.1em;margin-bottom:6px;}
+.dp-name{font-size:22px;font-weight:300;letter-spacing:.1em;margin-bottom:5px;}
 .dp-incant{font-family:'IM Fell English',serif;font-style:italic;font-size:16px;color:rgba(192,160,248,.9);margin-bottom:14px;line-height:1.5;}
 .dp-field{margin-bottom:8px;}
 .dp-fl{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.2em;color:rgba(144,96,200,.8);text-transform:uppercase;display:block;margin-bottom:2px;}
 .dp-fv{font-size:13.5px;color:rgba(201,196,207,.85);line-height:1.6;}
 .dp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
 .dp-chip{background:rgba(0,0,0,.25);border:1px solid rgba(36,32,64,.5);border-radius:3px;padding:9px 12px;}
-.dpc-label{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.15em;color:var(--mist);text-transform:uppercase;display:block;margin-bottom:3px;}
+.dpc-lbl{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.15em;color:var(--mist);text-transform:uppercase;display:block;margin-bottom:3px;}
 .dpc-val{font-size:12px;color:rgba(201,196,207,.7);}
 
-@media(max-width:600px){.hdr,.detail{padding-left:16px;padding-right:16px;}.grid{padding:16px;gap:14px;}}
-@media print{body{background:#000;}.hdr,.detail{display:none;}.grid{padding:8px;gap:10px;}.card:hover{transform:none;}}
+/* 1-UP mode — single column, larger cards */
+.grid.oneup .card-bleed{width:380px;height:556px;}
+.grid.oneup .card-face{top:15px;left:15px;width:350px;height:526px;}
+.grid.oneup .card-sigil{width:110px;height:110px;}
+.grid.oneup .card-title{font-size:19px;}
+.grid.oneup .cf-text{font-size:11.5px;}
+.grid.oneup .cf-label{font-size:7px;}
+
+@media(max-width:600px){
+  .hdr{padding:0 14px;}
+  .grid{padding:14px;gap:14px;}
+}
+@media print{
+  body{background:#000;}
+  .hdr,.detail{display:none;}
+  .grid{padding:6px;gap:8px;}
+  .cw:hover .card-bleed{transform:none;}
+}
 </style>
 </head>
 <body>
 
 <div class="hdr">
-  <div>
-    <div class="hdr-brand">Black Fairy · 4×6 Card Deck</div>
-    <div class="hdr-title">13 Beta Cards · Print Layout</div>
+  <div class="hdr-left">
+    <div class="hdr-brand">Black Fairy &middot; 4&times;6 Card Deck</div>
+    <div class="hdr-title">13 Cards &middot; Cell-in-Cell Print Layout</div>
   </div>
-  <div class="hdr-controls">
-    <span style="font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.2em;color:var(--mist);text-transform:uppercase;">Lane</span>
-    <button class="ctrl-btn active"  onclick="setLane('all',this)">All</button>
-    <button class="ctrl-btn inactive" onclick="setLane('Public',this)">Public</button>
-    <button class="ctrl-btn inactive" onclick="setLane('Facilitator',this)">Facilitator</button>
-    <button class="ctrl-btn inactive" onclick="setLane('Operator',this)">Operator</button>
-    <span style="font-family:'Space Mono',monospace;font-size:8px;color:rgba(36,32,64,.8);">|</span>
-    <button class="view-btn" id="backBtn" onclick="toggleBacks()">Show Backs</button>
+  <div class="hdr-right">
+    <span style="font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.2em;color:var(--mist);text-transform:uppercase;">Lane</span>
+    <button class="btn btn-lane on"  onclick="setLane('all',this)">All</button>
+    <button class="btn btn-lane" onclick="setLane('Public',this)">Public</button>
+    <button class="btn btn-lane" onclick="setLane('Facilitator',this)">Facilitator</button>
+    <button class="btn btn-lane" onclick="setLane('Operator',this)">Operator</button>
+    <div class="sep"></div>
+    <button class="btn btn-action" id="backBtn"   onclick="toggleBacks()">Backs</button>
+    <button class="btn btn-action" id="guidesBtn" onclick="toggleGuides()">Guides</button>
+    <button class="btn btn-action" id="marksBtn"  onclick="toggleMarks()">Marks</button>
+    <button class="btn btn-action" id="oneupBtn"  onclick="toggleOneUp()">1-up</button>
   </div>
 </div>
 
@@ -212,266 +285,284 @@ body{background:#1a1628;color:var(--white);font-family:'Cormorant Garamond',seri
 <div class="detail" id="detail"></div>
 
 <script>
-// ── SIGIL PATHS (200×200 viewBox, all visually centered at ~100,100) ─────
-const SP = {
+var SP = {
   'mirror-audit':
-    `<circle cx="100" cy="112" r="72"/>
-     <circle cx="100" cy="112" r="46"/>
-     <circle cx="100" cy="112" r="22"/>
-     <path d="M100 28 L114 52 L86 52 Z"/>
-     <line x1="100" y1="52" x2="100" y2="90"/>`,
+    '<circle cx="100" cy="112" r="72"/>' +
+    '<circle cx="100" cy="112" r="46"/>' +
+    '<circle cx="100" cy="112" r="22"/>' +
+    '<path d="M100 28 L114 52 L86 52 Z"/>' +
+    '<line x1="100" y1="52" x2="100" y2="90"/>',
 
   'memory-unbinding':
-    `<path d="M32 100 C52 68,82 68,100 100 C118 132,148 132,168 100"/>
-     <line x1="86" y1="72" x2="114" y2="128" stroke-width="4"/>
-     <line x1="86" y1="128" x2="74" y2="148"/>
-     <line x1="86" y1="128" x2="100" y2="150"/>
-     <line x1="114" y1="72" x2="100" y2="50"/>
-     <line x1="114" y1="72" x2="128" y2="48"/>`,
+    '<path d="M32 100 C52 68,82 68,100 100 C118 132,148 132,168 100"/>' +
+    '<line x1="86" y1="72" x2="114" y2="128" stroke-width="4"/>' +
+    '<line x1="86" y1="128" x2="74" y2="148"/>' +
+    '<line x1="86" y1="128" x2="100" y2="150"/>' +
+    '<line x1="114" y1="72" x2="100" y2="50"/>' +
+    '<line x1="114" y1="72" x2="128" y2="48"/>',
 
   'winged-threshold':
-    `<line x1="30" y1="100" x2="170" y2="100"/>
-     <path d="M95 100 C55 55,20 70,22 112 C52 120,76 112,95 100 Z"/>
-     <path d="M105 100 C145 55,180 70,178 112 C148 120,124 112,105 100 Z"/>
-     <line x1="100" y1="55" x2="100" y2="145"/>`,
+    '<line x1="30" y1="100" x2="170" y2="100"/>' +
+    '<path d="M95 100 C55 55,20 70,22 112 C52 120,76 112,95 100 Z"/>' +
+    '<path d="M105 100 C145 55,180 70,178 112 C148 120,124 112,105 100 Z"/>' +
+    '<line x1="100" y1="55" x2="100" y2="145"/>',
 
   'mirror-seal':
-    `<circle cx="100" cy="100" r="72"/>
-     <path d="M35 100 C60 60,140 60,165 100 C140 140,60 140,35 100 Z"/>
-     <circle cx="100" cy="100" r="18"/>
-     <line x1="100" y1="25" x2="100" y2="175"/>`,
+    '<circle cx="100" cy="100" r="72"/>' +
+    '<path d="M35 100 C60 60,140 60,165 100 C140 140,60 140,35 100 Z"/>' +
+    '<circle cx="100" cy="100" r="18"/>' +
+    '<line x1="100" y1="25" x2="100" y2="175"/>',
 
   'dna-flame':
-    `<path d="M100 172 C55 130,84 92,100 72 C116 92,145 130,100 172 Z"/>
-     <path d="M75 155 C125 128,125 82,75 55"/>
-     <path d="M125 155 C75 128,75 82,125 55"/>
-     <line x1="83" y1="77" x2="117" y2="77"/>
-     <line x1="78" y1="105" x2="122" y2="105"/>
-     <line x1="85" y1="132" x2="115" y2="132"/>`,
+    '<path d="M100 172 C55 130,84 92,100 72 C116 92,145 130,100 172 Z"/>' +
+    '<path d="M75 155 C125 128,125 82,75 55"/>' +
+    '<path d="M125 155 C75 128,75 82,125 55"/>' +
+    '<line x1="83" y1="77" x2="117" y2="77"/>' +
+    '<line x1="78" y1="105" x2="122" y2="105"/>' +
+    '<line x1="85" y1="132" x2="115" y2="132"/>',
 
   'shadowlight-shield':
-    `<path d="M100 25 L158 52 L140 145 L100 176 L60 145 L42 52 Z"/>
-     <line x1="100" y1="45" x2="100" y2="154"/>
-     <circle cx="100" cy="98" r="16"/>
-     <path d="M70 98 C85 78,115 78,130 98 C115 118,85 118,70 98 Z"/>`,
+    '<path d="M100 25 L158 52 L140 145 L100 176 L60 145 L42 52 Z"/>' +
+    '<line x1="100" y1="45" x2="100" y2="154"/>' +
+    '<circle cx="100" cy="98" r="16"/>' +
+    '<path d="M70 98 C85 78,115 78,130 98 C115 118,85 118,70 98 Z"/>',
 
   'spiral-release':
-    `<circle cx="100" cy="100" r="74"/>
-     <path d="M100 95 a5 5 0 1 0 0 10 a15 15 0 1 0 0 -30 a28 28 0 1 0 0 56 a42 42 0 1 0 0 -84 a58 58 0 1 0 0 116"/>`,
+    '<circle cx="100" cy="100" r="74"/>' +
+    '<path d="M100 95 a5 5 0 1 0 0 10 a15 15 0 1 0 0 -30 a28 28 0 1 0 0 56 a42 42 0 1 0 0 -84 a58 58 0 1 0 0 116"/>',
 
   'void-mirror':
-    `<rect x="58" y="25" width="84" height="150" rx="6"/>
-     <rect x="70" y="38" width="60" height="124" rx="3"/>
-     <line x1="52" y1="180" x2="148" y2="12" stroke-width="4.5"/>`,
+    '<rect x="58" y="25" width="84" height="150" rx="6"/>' +
+    '<rect x="70" y="38" width="60" height="124" rx="3"/>' +
+    '<line x1="52" y1="180" x2="148" y2="12" stroke-width="4.5"/>',
 
   'still-crown':
-    `<path d="M55 88 L72 55 L90 76 L100 58 L110 76 L128 55 L145 88"/>
-     <line x1="30" y1="100" x2="170" y2="100"/>
-     <circle cx="100" cy="100" r="7" stroke-width="7"/>`,
+    '<path d="M55 88 L72 55 L90 76 L100 58 L110 76 L128 55 L145 88"/>' +
+    '<line x1="30" y1="100" x2="170" y2="100"/>' +
+    '<circle cx="100" cy="100" r="7" stroke-width="7"/>',
 
   'bf-flight':
-    `<line x1="40" y1="165" x2="160" y2="35"/>
-     <path d="M100 72 C75 55,42 68,48 105"/>
-     <path d="M100 72 C125 55,158 68,152 105"/>
-     <circle cx="100" cy="118" r="8"/>`,
+    '<line x1="40" y1="165" x2="160" y2="35"/>' +
+    '<path d="M100 72 C75 55,42 68,48 105"/>' +
+    '<path d="M100 72 C125 55,158 68,152 105"/>' +
+    '<circle cx="100" cy="118" r="8"/>',
 
   'line-remains':
-    `<line x1="100" y1="18" x2="100" y2="182"/>
-     <path d="M100 40 A62 62 0 0 1 162 100"/>
-     <path d="M100 160 A62 62 0 0 1 38 100"/>
-     <circle cx="100" cy="100" r="8"/>`,
+    '<line x1="100" y1="18" x2="100" y2="182"/>' +
+    '<path d="M100 40 A62 62 0 0 1 162 100"/>' +
+    '<path d="M100 160 A62 62 0 0 1 38 100"/>' +
+    '<circle cx="100" cy="100" r="8"/>',
 
   'return-violet':
-    `<line x1="100" y1="28" x2="100" y2="62"/>
-     <path d="M100 64 m32 0 a32 32 0 1 1 -64 0 a22 22 0 1 0 44 0 a12 12 0 1 1 -24 0 a4 4 0 1 0 8 0"/>
-     <ellipse cx="100" cy="145" rx="52" ry="18"/>`,
+    '<line x1="100" y1="28" x2="100" y2="62"/>' +
+    '<path d="M100 64 m32 0 a32 32 0 1 1 -64 0 a22 22 0 1 0 44 0 a12 12 0 1 1 -24 0 a4 4 0 1 0 8 0"/>' +
+    '<ellipse cx="100" cy="145" rx="52" ry="18"/>',
 
   'done-for-now':
-    `<line x1="20" y1="100" x2="162" y2="100"/>
-     <circle cx="178" cy="100" r="10"/>
-     <line x1="95" y1="68" x2="95" y2="132" stroke-width="1.5" stroke-opacity=".35"/>`,
+    '<line x1="20" y1="100" x2="162" y2="100"/>' +
+    '<circle cx="178" cy="100" r="10"/>' +
+    '<line x1="95" y1="68" x2="95" y2="132" stroke-width="1.5" stroke-opacity=".35"/>',
 
   'mirror-circuit':
-    `<line x1="28" y1="100" x2="172" y2="100"/>
-     <path d="M58 100 L62 88 L50 96 L66 96 L54 88 Z"/>
-     <ellipse cx="100" cy="100" rx="22" ry="14"/>
-     <circle cx="100" cy="100" r="6" stroke-width="6"/>
-     <path d="M142 86 A18 18 0 1 1 142 114" stroke-linecap="round"/>`,
+    '<line x1="28" y1="100" x2="172" y2="100"/>' +
+    '<path d="M58 100 L62 88 L50 96 L66 96 L54 88 Z"/>' +
+    '<ellipse cx="100" cy="100" rx="22" ry="14"/>' +
+    '<circle cx="100" cy="100" r="6" stroke-width="6"/>' +
+    '<path d="M142 86 A18 18 0 1 1 142 114" stroke-linecap="round"/>',
 };
 
-function sigil(id, stroke) {
+function mkSigil(id, stroke) {
   stroke = stroke || '#c9c4cf';
-  var p = SP[id];
-  if (!p) return '';
-  return '<svg viewBox="0 0 200 200" width="88" height="88" style="overflow:visible;display:block;" preserveAspectRatio="xMidYMid meet"><g fill="none" stroke="' + stroke + '" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">' + p + '</g></svg>';
+  var p = SP[id] || '';
+  return '<svg viewBox="0 0 200 200" width="88" height="88" style="overflow:visible;display:block;" preserveAspectRatio="xMidYMid meet">'
+       + '<g fill="none" stroke="' + stroke + '" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">'
+       + p + '</g></svg>';
 }
 
-// ── CARD DATA ───────────────────────────────────────────────────────────
 var CARDS = [
-  {id:'C-01', r:'R.16', name:'Mirror Audit',       sig:'mirror-audit',        lane:'Public',      key:'MS', dots:1,
+  {id:'C-01',r:'R.16',name:'Mirror Audit',      sig:'mirror-audit',       lane:'Public',      key:'MS',dots:1,
    signal:'What is true right now?',
    mirror:'Name the thing you have been avoiding knowing.',
    move:'Write one true sentence. Stop when you stop.',
    incant:'What is true right now? The mirror confirms it.'},
-  {id:'C-02', r:'R.06', name:'Memory Unbinding',   sig:'memory-unbinding',    lane:'Facilitator', key:'BE', dots:3,
+  {id:'C-02',r:'R.06',name:'Memory Unbinding',  sig:'memory-unbinding',   lane:'Facilitator', key:'BE',dots:3,
    signal:'What is still attached that was never yours?',
    mirror:'Name the cord. One thing only.',
    move:'Cut it once. Name what remains.',
    incant:'This cord fed on my clarity. I now feed on freedom.'},
-  {id:'C-03', r:'R.15', name:'Winged Threshold',   sig:'winged-threshold',    lane:'Public',      key:'DF', dots:2,
+  {id:'C-03',r:'R.15',name:'Winged Threshold',  sig:'winged-threshold',   lane:'Public',      key:'DF',dots:2,
    signal:'What are you crossing with?',
    mirror:'What did you agree to carry that was not the price of entry?',
    move:'Cross with what you know. Leave what was not yours.',
    incant:'I cross with what I know. I leave what was not mine.'},
-  {id:'C-04', r:'R.02', name:'Sealed Eye',          sig:'mirror-seal',         lane:'Internal QA', key:'MS', dots:2,
+  {id:'C-04',r:'R.02',name:'Sealed Eye',         sig:'mirror-seal',        lane:'Internal QA', key:'MS',dots:2,
    signal:'What have you already seen?',
    mirror:'Name the perception you sealed.',
    move:'Look once, clean. Then seal it.',
    incant:'Seen by me. Not owned by them.'},
-  {id:'C-05', r:'R.09', name:'DNA Flame',           sig:'dna-flame',           lane:'Public',      key:'DF', dots:2,
+  {id:'C-05',r:'R.09',name:'DNA Flame',          sig:'dna-flame',          lane:'Public',      key:'DF',dots:2,
    signal:'Where does your clarity live in your body?',
    mirror:'What shape does your truest self take?',
    move:'Stand in it. One full breath.',
    incant:'I burn for the version of me who refused to die.'},
-  {id:'C-06', r:'R.05', name:'Shadowlight Shield',  sig:'shadowlight-shield',  lane:'Public',      key:'QF', dots:1,
+  {id:'C-06',r:'R.05',name:'Shadowlight Shield', sig:'shadowlight-shield', lane:'Public',      key:'QF',dots:1,
    signal:'What burden was assigned to you without consent?',
    mirror:'Name three roles you are dropping.',
    move:'Scatter the salt. Name what remains.',
    incant:'Not my burden. Not my cage.'},
-  {id:'C-07', r:'R.08', name:'Spiral Release',      sig:'spiral-release',      lane:'Public',      key:'BE', dots:1,
+  {id:'C-07',r:'R.08',name:'Spiral Release',     sig:'spiral-release',     lane:'Public',      key:'BE',dots:1,
    signal:'What are you still present for that you already left?',
    mirror:'Name the exit you are postponing.',
    move:'Make one clean move. Then go silent.',
    incant:'I have left the room. Do not follow.'},
-  {id:'C-08', r:'R.10', name:'Void Mirror',         sig:'void-mirror',         lane:'Facilitator', key:'QF', dots:3,
+  {id:'C-08',r:'R.10',name:'Void Mirror',        sig:'void-mirror',        lane:'Facilitator', key:'QF',dots:3,
    signal:'What is this silence protecting?',
    mirror:'Name what armor has replaced presence.',
    move:'Leave one thing unfinished. Walk away anyway.',
    incant:'Marked by Fire. Ruled by None.'},
-  {id:'C-09', r:'R.01', name:'Still Crown',         sig:'still-crown',         lane:'Operator',    key:'QF', dots:1,
+  {id:'C-09',r:'R.01',name:'Still Crown',        sig:'still-crown',        lane:'Operator',    key:'QF',dots:1,
    signal:'Who are you when no one is naming you?',
    mirror:'What name is yours?',
    move:'Say your name once. Quietly. Mean it.',
    incant:'I am not what they named me. I am the fire that renamed itself.'},
-  {id:'C-10', r:'—',    name:'Black Fairy Flight',  sig:'bf-flight',           lane:'Internal QA', key:'DF', dots:2,
+  {id:'C-10',r:'\u2014',name:'Black Fairy Flight',sig:'bf-flight',         lane:'Internal QA', key:'DF',dots:2,
    signal:'What direction is up right now?',
    mirror:'What threshold have you already crossed?',
    move:'Face the open space. Take one step into it.',
    incant:'Na tan-te en fa sel.'},
-  {id:'C-11', r:'R.17', name:'The Line Remains',    sig:'line-remains',        lane:'Facilitator', key:'TH', dots:3,
+  {id:'C-11',r:'R.17',name:'The Line Remains',   sig:'line-remains',       lane:'Facilitator', key:'TH',dots:3,
    signal:'What false shape has collapsed?',
    mirror:'Name what was never true.',
    move:'Name the line. Let it stand.',
    incant:'The false shapes fall. The line remains.'},
-  {id:'C-12', r:'R.12', name:'Return to Violet',    sig:'return-violet',       lane:'Internal QA', key:'BE', dots:1,
+  {id:'C-12',r:'R.12',name:'Return to Violet',   sig:'return-violet',      lane:'Internal QA', key:'BE',dots:1,
    signal:'What did you already know before the noise?',
    mirror:'Name the original knowing.',
    move:'Return to it. One quiet decision.',
    incant:'En del-te rola. Ellari.'},
-  {id:'C-13', r:'—',    name:'Done for Now',        sig:'done-for-now',        lane:'Public',      key:'MS', dots:1,
+  {id:'C-13',r:'\u2014',name:'Done for Now',     sig:'done-for-now',       lane:'Public',      key:'MS',dots:1,
    signal:'Is this complete enough to set down?',
    mirror:'Name what completion looks like for today.',
    move:'Set it down. Rest.',
    incant:'Zakhor.'},
 ];
 
-var LANE = {
-  'Public':      'lane-public',
-  'Facilitator': 'lane-facilitator',
-  'Operator':    'lane-operator',
-  'Internal QA': 'lane-qa',
+var LANE_CSS = {
+  'Public':'lane-public','Facilitator':'lane-facilitator',
+  'Operator':'lane-operator','Internal QA':'lane-qa'
 };
 
-var showBacks   = false;
-var selectedIdx = null;
-var currentLane = 'all';
+var showBacks=false, showGuides=false, showMarks=false, oneUp=false;
+var selIdx=null, curLane='all';
 
-function dotStr(n) {
-  var s = '';
-  for (var i = 0; i < 3; i++) s += (i < n) ? '\u25CF' : '\u25CB';
+function dots(n) {
+  var s='';
+  for(var i=0;i<3;i++) s+=(i<n)?'\u25CF':'\u25CB';
   return s;
 }
 
-function cardHTML(c, i) {
-  var lc   = LANE[c.lane] || 'lane-qa';
-  var sel  = (selectedIdx === i) ? ' selected' : '';
-  var show = (currentLane !== 'all' && c.lane !== currentLane) ? 'display:none' : '';
-  var back = showBacks ? ' show' : '';
+function cardHTML(c,i) {
+  var lc   = LANE_CSS[c.lane]||'lane-qa';
+  var sel  = (selIdx===i)?' selected':'';
+  var hide = (curLane!=='all'&&c.lane!==curLane)?'display:none':'';
+  var back = showBacks?' show':'';
 
-  return '<div class="card-wrap' + sel + '" id="cw' + i + '" onclick="pick(' + i + ')" style="' + show + '">'
-    + '<div class="card" id="c' + i + '">'
-      + '<div class="card-art"></div>'
-      + '<div class="card-border"></div>'
-      + '<div class="card-num">' + c.id + ' &middot; ' + c.r + '</div>'
-      + '<div class="card-lane ' + lc + '">' + c.lane + '</div>'
-      + '<div class="card-sigil-area"><div class="card-sigil">' + sigil(c.sig) + '</div></div>'
-      + '<div class="card-lower"></div>'
-      + '<div class="card-content">'
-        + '<div class="card-title">' + c.name + '</div>'
-        + '<div class="card-div"></div>'
-        + '<div class="card-chips">'
-          + '<span class="chip-key">' + c.key + '</span>'
-          + '<span class="chip-int">' + dotStr(c.dots) + '</span>'
-        + '</div>'
-        + '<div class="card-fields">'
-          + '<div class="cf-row"><span class="cf-label">Signal</span><div class="cf-text">' + c.signal + '</div></div>'
-          + '<div class="cf-row"><span class="cf-label">Mirror</span><div class="cf-text">' + c.mirror + '</div></div>'
-          + '<div class="cf-row"><span class="cf-label">Move</span><div class="cf-text">' + c.move + '</div></div>'
-        + '</div>'
-      + '</div>'
-      + '<div class="card-footer">MIRROR&trade; &middot; ELARRI.AI</div>'
-      + '<div class="card-back' + back + '">'
-        + '<div class="cb-seal">' + sigil('mirror-circuit', 'rgba(201,196,207,0.35)') + '</div>'
-        + '<div class="cb-rule"></div>'
-        + '<div class="cb-phrase">El ter sel is.</div>'
-        + '<div class="cb-mark">MIRROR&trade; &middot; ELARRI.AI</div>'
-      + '</div>'
-    + '</div>'
-    + '<div class="cw-label">' + c.id + ' &middot; V1.0</div>'
-  + '</div>';
+  return '<div class="cw'+sel+'" id="cw'+i+'" onclick="pick('+i+')" style="'+hide+'">'
+    +'<div class="card-bleed">'
+      +'<div class="bleed-art"></div>'
+      +'<div class="crop-marks">'
+        +'<div class="cm cm-tl-h"></div><div class="cm cm-tl-v"></div>'
+        +'<div class="cm cm-tr-h"></div><div class="cm cm-tr-v"></div>'
+        +'<div class="cm cm-bl-h"></div><div class="cm cm-bl-v"></div>'
+        +'<div class="cm cm-br-h"></div><div class="cm cm-br-v"></div>'
+      +'</div>'
+      +'<div class="card-face">'
+        +'<div class="card-num">'+c.id+' &middot; '+c.r+'</div>'
+        +'<div class="card-lane '+lc+'">'+c.lane+'</div>'
+        +'<div class="card-sigil-area"><div class="card-sigil">'+mkSigil(c.sig)+'</div></div>'
+        +'<div class="card-lower"></div>'
+        +'<div class="card-content">'
+          +'<div class="card-title">'+c.name+'</div>'
+          +'<div class="card-div"></div>'
+          +'<div class="card-chips">'
+            +'<span class="chip-key">'+c.key+'</span>'
+            +'<span class="chip-int">'+dots(c.dots)+'</span>'
+          +'</div>'
+          +'<div class="card-fields">'
+            +'<div class="cf-row"><span class="cf-label">Signal</span><div class="cf-text">'+c.signal+'</div></div>'
+            +'<div class="cf-row"><span class="cf-label">Mirror</span><div class="cf-text">'+c.mirror+'</div></div>'
+            +'<div class="cf-row"><span class="cf-label">Move</span><div class="cf-text">'+c.move+'</div></div>'
+          +'</div>'
+        +'</div>'
+        +'<div class="card-footer">MIRROR&trade; &middot; ELARRI.AI</div>'
+        +'<div class="card-back'+back+'">'
+          +'<div style="opacity:.55">'+mkSigil('mirror-circuit','rgba(201,196,207,0.4)')+'</div>'
+          +'<div class="cb-rule"></div>'
+          +'<div class="cb-phrase">El ter sel is.</div>'
+          +'<div class="cb-mark">MIRROR&trade; &middot; ELARRI.AI</div>'
+        +'</div>'
+      +'</div>'
+    +'</div>'
+    +'<div class="cw-label">'+c.id+' &middot; V1.0</div>'
+  +'</div>';
 }
 
 function render() {
-  var html = '';
-  for (var i = 0; i < CARDS.length; i++) html += cardHTML(CARDS[i], i);
-  document.getElementById('cardGrid').innerHTML = html;
+  var h='';
+  for(var i=0;i<CARDS.length;i++) h+=cardHTML(CARDS[i],i);
+  document.getElementById('cardGrid').innerHTML=h;
 }
 
 function pick(i) {
-  selectedIdx = (selectedIdx === i) ? null : i;
+  selIdx=(selIdx===i)?null:i;
   render();
-  var panel = document.getElementById('detail');
-  if (selectedIdx === null) { panel.classList.remove('show'); return; }
-  var c = CARDS[i];
-  panel.innerHTML = '<div class="dp-card">'
-    + '<div class="dp-num">' + c.id + ' &middot; ' + c.r + ' &middot; ' + c.lane + ' &middot; Key: ' + c.key + ' &middot; ' + dotStr(c.dots) + '</div>'
-    + '<div class="dp-name">' + c.name + '</div>'
-    + '<div class="dp-incant">&ldquo;' + c.incant + '&rdquo;</div>'
-    + '<div class="dp-field"><span class="dp-fl">Signal</span><div class="dp-fv">' + c.signal + '</div></div>'
-    + '<div class="dp-field"><span class="dp-fl">Mirror</span><div class="dp-fv">' + c.mirror + '</div></div>'
-    + '<div class="dp-field"><span class="dp-fl">Move</span><div class="dp-fv">' + c.move + '</div></div>'
-    + '<div class="dp-grid">'
-      + '<div class="dp-chip"><span class="dpc-label">Pass standard</span><div class="dpc-val">C/S/A/P/DS &ge; 4 &middot; Load &le; 3</div></div>'
-      + '<div class="dp-chip"><span class="dpc-label">Intensity</span><div class="dpc-val">' + dotStr(c.dots) + ' &middot; ' + (c.dots === 3 ? 'Black Label' : c.dots === 2 ? 'Member' : 'Open') + '</div></div>'
-    + '</div>'
-  + '</div>';
+  var panel=document.getElementById('detail');
+  if(selIdx===null){panel.classList.remove('show');return;}
+  var c=CARDS[i];
+  panel.innerHTML='<div class="dp-card">'
+    +'<div class="dp-num">'+c.id+' &middot; '+c.r+' &middot; '+c.lane+' &middot; Key: '+c.key+' &middot; '+dots(c.dots)+'</div>'
+    +'<div class="dp-name">'+c.name+'</div>'
+    +'<div class="dp-incant">&ldquo;'+c.incant+'&rdquo;</div>'
+    +'<div class="dp-field"><span class="dp-fl">Signal</span><div class="dp-fv">'+c.signal+'</div></div>'
+    +'<div class="dp-field"><span class="dp-fl">Mirror</span><div class="dp-fv">'+c.mirror+'</div></div>'
+    +'<div class="dp-field"><span class="dp-fl">Move</span><div class="dp-fv">'+c.move+'</div></div>'
+    +'<div class="dp-grid">'
+      +'<div class="dp-chip"><span class="dpc-lbl">Pass standard</span><div class="dpc-val">C/S/A/P/DS &ge; 4 &middot; Load &le; 3</div></div>'
+      +'<div class="dp-chip"><span class="dpc-lbl">Intensity</span><div class="dpc-val">'+dots(c.dots)+' &middot; '+(c.dots===3?'Black Label':c.dots===2?'Member':'Open')+'</div></div>'
+    +'</div>'
+  +'</div>';
   panel.classList.add('show');
-  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-function setLane(lane, btn) {
-  currentLane = lane;
-  document.querySelectorAll('.ctrl-btn').forEach(function(b) {
-    b.className = (b === btn) ? 'ctrl-btn active' : 'ctrl-btn inactive';
+function setLane(lane,btn) {
+  curLane=lane;
+  document.querySelectorAll('.btn-lane').forEach(function(b){
+    b.classList.toggle('on',b===btn);
   });
   render();
 }
 
 function toggleBacks() {
-  showBacks = !showBacks;
-  var btn = document.getElementById('backBtn');
-  btn.textContent = showBacks ? 'Show Fronts' : 'Show Backs';
-  btn.classList.toggle('on', showBacks);
+  showBacks=!showBacks;
+  document.getElementById('backBtn').classList.toggle('on',showBacks);
+  render();
+}
+function toggleGuides() {
+  showGuides=!showGuides;
+  document.getElementById('guidesBtn').classList.toggle('on',showGuides);
+  document.body.classList.toggle('show-guides',showGuides);
+}
+function toggleMarks() {
+  showMarks=!showMarks;
+  document.getElementById('marksBtn').classList.toggle('on',showMarks);
+  document.body.classList.toggle('show-marks',showMarks);
+}
+function toggleOneUp() {
+  oneUp=!oneUp;
+  document.getElementById('oneupBtn').classList.toggle('on',oneUp);
+  var grid=document.getElementById('cardGrid');
+  grid.className=oneUp?'grid oneup':'grid';
   render();
 }
 
