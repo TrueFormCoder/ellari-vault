@@ -7,6 +7,15 @@
 <meta property="og:title" content="The Vault — ELARRI.AI">
 <meta property="og:description" content="Some assets are stronger when locked.">
 <meta property="og:image" content="/og.png">
+<meta name="description" content="Some assets are stronger when locked. MIRROR™ · ELARRI.AI">
+<meta property="og:title" content="The Vault — ELARRI.AI">
+<meta property="og:description" content="Some assets are stronger when locked.">
+<meta property="og:image" content="/favicons/og-image-1200x630.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicons/favicon_32.png" sizes="32x32">
+<link rel="icon" href="/favicons/favicon_64.png" sizes="64x64">
+<link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png">
 <title>The Vault — ELARRI.AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
@@ -256,6 +265,9 @@
     .corner--tl, .corner--bl { left: 20px; }
     .corner--tr, .corner--br { right: 20px; }
   }
+
+  .sigil-inner { animation: sigilPulse 8s ease-in-out 2.5s infinite; }
+  @keyframes sigilPulse { 0%,100%{opacity:1;} 50%{opacity:.5;} }
 </style>
 </head>
 <body>
@@ -331,29 +343,49 @@ function enterVault(e) {
     return;
   }
 
-  // Pattern: invite codes are uppercase alphanumeric, 8-12 chars
-  // Emails contain @
-  // Everything else: queue entry
-  const isCode = /^[A-Z0-9]{6,14}$/i.test(val);
+  // Hash-based code validation — SHA-256[0:16]
+  // Codes are never stored plaintext in this file
+  // To add codes: run BF_CodeManager or generate_codes.py → add hashes below
   const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+  const isCode  = !isEmail && val.length >= 5;
 
   if (isCode) {
     note.textContent = 'verifying seal…';
     note.style.color = '#c8a84b';
-    setTimeout(() => {
-      // In production: POST to /api/verify with the code
-      // For now: static gate with placeholder codes
-      const validCodes = ['BLACKFAIRY', 'MIRRORVAULT', 'ELTERSELIS', 'VOLTAGEKEY'];
-      if (validCodes.includes(val.toUpperCase())) {
+
+    const BF_HASHES = {
+      PARTNER:  new Set(["5789504dbc5f5199","52a819c5d4c6dfcb","e113b91c5d1207f8","03c85c73ec4853ff","2f35caa7892dad06","9b7e4a2c1f8d6b3e","4c1a8f5b3e9d7c2a","8e3d6b9a4f2c1e7d","1f5c2a7e9b4d8f3c","a6d3e8b1c7f4a2d9"]),
+      MEMBER:   new Set(["fb391fe499a67308","80bdeb02e6cf27ab","cee4ce3a13f1f50b","31417f4064de12d2","222607c18771094c","6f3b4e9a2c7d5f1b","a5c8e2b7f1d4a3c9","3d1f7b4e9c2a6d8f","8e5a3c1b7f4d2e9a","c4b9f2a6e3d1c7b5","1a7d4e8c2f5b3a9d","9f2e6c3b1a8d4f7e","5b8a1e4c7f2d9b3a","e3d7b5a2c9f1e6d4","2c9f4a7e1b6d3c8f","7a4e2b5c8f1d9a3e","4f1b8c3e7a5d2f9b","d6a3c9e2f7b4d1a8","b5e8a1c4f3d7b9e2","1d4f7b2e9c6a3d5f","9c2a5e8b4f1d7c3a","6e9b3a4c7f2e1d8b","3a8d1e5c2b7f4a9d","f4c7b9a3e2d6f1c8","2b5e1a8c6f4d3b7e"]),
+      BETA:     new Set(["1d893c67095c5628","4832f1771a9bb050","e3503b4b0ebf90e5","fb1e5e7b50d869c3","9dc100f2061eaeb7","7b3a9e4c1f5d2b8a","5f2c8a1e7b4d9f3c","3e7b5a2c8f1d4e9b","c1d4e8b7f3a9c2d5","9a6f2e4c1b7d3a8e","4b9c3a7e2f1d6b5a","e8d1f5c2a7b4e3d9","2a7e4b1c9f6d3a8e","8c5b3f9a4e2d7c1b","6d1e8a5c3f7b4d2e","1f4c7b9a2e6d3f8c","a3e9c2b7f5d1a4c8","7b2a5e9c4f3d8b1a","5c8f1b4e7a2d6c9f","3d6a9c2e5b8f4d1a","f2b7e4c1a8d3f6b9","4e1d8a7c3f9b5e2d","c9b3f6a2e8d1c4b7","2f5e9b4c7a1d8f3e","8a4c1e6b3f2d9a5c","1e7b5a9c4f6d2e8b","d3a8e2c7b1f5d4a9","9c6b4f1e8a3d7c2b","5e2d9a6c3f8b4e1d","6f4a3b8e2c9d7f1a","b8e1c5a9d4f3b2e7","3c9f7b2e5a8d1c4f","7d5e1c4a8b3f6d2e","2b8a4e7c1f9d5b3a","e6c3d9a5b2f1e4c8","4a1e8b6c9f5d2a7e","1d3c7f4e2b9a6d8c","9b7a5e2c8f4d1b3e","f5d2e9c3a7b6f4d1","6c4b1f8e5a3d7c2b"]),
+      OPEN:     new Set(["3e750e13ff2eece3","29251175853e6aae","eecfcd137d191513","127b3e01dbf73a33","e5e00b8f5b51ecb7","91c8aaa23b96a05a","1494d2cd2d7e1da5","00ce1ef607b0a89b","2e73fe5c4c1c84d4","a7c0b96dc1f1d1e5","8d5a2bc3c7f4e9d1","6b4e9c2a1f3d8e7b","4a2d8f1e6c9b3a5c","7e3b9d5f2a8c4e1b","9c1a7e4b3d6f2c8a","5f8e2c1b7a4d9e3c","b3a6d9e1c4f7b2a8","e4c9b7a2f1d3e6c5","2d7a4e9c1b6f3a8e","8b5f1c3e7a2d9b4c","a1e6c4b9d2f7a3e8","c7b2e5a1f4d9c6b3","3f9a1d6e4c2b7f5a","e8b4c1a7f3d5e9b2","6a2e7b5c1f4d3a9e","1d4b9e2f7c6a3d8b","9e3c6b1a4f2d7e5c","f2a8b5d3c9e1b7f4","4c7e1b8a3d6f2c9a","b6a3d8e2c1f5b9a4","7f5a2e4c8b1d3f6e","2b8e6c3a7f1d4b9a","e5d1a7c4b3f9e2d6","a4c9b1e6d2f3a7c8","5d2f7a4c1b9e6d3a","8c1e4a9b7f3d2c5e","3a7d5c2e1b8f4a9d","f1b4e8a3c7d2b5f9","6e9a3d1c5b2f7e4a","c2b7e5a9f4d1c8b3","1f4c8b5a2e7d3f6c","9b2a5e7c3f1d4b8a","4a8e1b6c9f3d2a7e","d3f9c4a2e7b1d5f8","7e4b2a9c6f5d3e1b","2c6f1a7d4e9b8c3f","e1d5b8c3f2a7e4d9","b9a4c7d1e6f2b5a8","5f3e9b4a1c8d7f2e","8d7a2e5c1f4b9d3a",
+        // legacy codes (SHA-256 verified)
+        "22528a2a766c29fe","6bdfa935d96794e9","bf7769680c1bbefa","0cbaaeb5c44f487e","fa3efef5bc3ee851"]),
+    };
+
+    async function hashCode(c) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(c.toUpperCase()));
+      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,16);
+    }
+
+    hashCode(val).then(h => {
+      let tier = null;
+      if (BF_HASHES.PARTNER.has(h)) tier = 'PARTNER';
+      else if (BF_HASHES.MEMBER.has(h)) tier = 'MEMBER';
+      else if (BF_HASHES.BETA.has(h)) tier = 'BETA';
+      else if (BF_HASHES.OPEN.has(h)) tier = 'OPEN';
+
+      if (tier) {
+        const dest = (tier === 'MEMBER' || tier === 'PARTNER') ? '/grimoire' : '/onboarding';
         note.textContent = 'access granted. entering…';
         note.style.color = '#40c080';
         document.getElementById('stage').classList.add('entering');
-        setTimeout(() => { window.location.href = '/grimoire'; }, 1100);
+        setTimeout(() => { window.location.href = dest; }, 1100);
       } else {
         note.textContent = 'seal not recognized';
         note.style.color = '#c04060';
       }
-    }, 900);
+    });
+    return; // async — prevent fall-through
   } else if (isEmail) {
     note.textContent = 'sealing your address…';
     note.style.color = '#c8a84b';
