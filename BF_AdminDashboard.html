@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BF Admin — Beta Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --void:#040306;--panel:#0f0c1a;--panel2:#130e20;
+  --v2:#5020a0;--v3:#8050c8;--v4:#b080e8;
+  --s1:#c9c4cf;--s2:#8888a0;--mist:#3c3458;--mist2:#504870;
+  --white:#ece8f8;--border:#1e1838;--border2:#261e3e;
+  --green:#3a9870;--green2:#50c888;
+  --amber:#c09040;--amber2:#e0b840;
+  --red:#a03050;--red2:#c04060;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--void);color:var(--white);font-family:'Space Mono',monospace;font-size:12px;min-height:100vh;}
+
+.nav{position:sticky;top:0;z-index:100;background:rgba(4,3,6,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);height:50px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;}
+.nav-title{font-size:11px;letter-spacing:.2em;color:var(--s2);}
+.nav-email{font-size:8px;color:var(--mist2);}
+.nav-out{font-size:8px;letter-spacing:.15em;color:var(--mist);cursor:pointer;background:transparent;border:none;padding:4px;transition:color .2s;}
+.nav-out:hover{color:var(--s2);}
+
+.main{max-width:1100px;margin:0 auto;padding:28px 24px 80px;}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:24px;}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:16px 18px;}
+.sc-val{font-size:28px;letter-spacing:.03em;line-height:1;margin-bottom:4px;}
+.sc-val.green{color:var(--green2);}
+.sc-val.violet{color:var(--v4);}
+.sc-val.amber{color:var(--amber2);}
+.sc-label{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--mist2);}
+.sc-sub{font-size:9px;color:var(--mist);margin-top:4px;}
+
+/* CARD ANALYTICS */
+.section{margin-bottom:28px;}
+.sec-title{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--s2);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.card-analytics-grid{display:flex;flex-direction:column;gap:4px;}
+.ca-row{display:grid;grid-template-columns:180px 60px repeat(6,1fr) 80px;gap:6px;align-items:center;padding:10px 12px;background:var(--panel);border-radius:3px;border:1px solid var(--border);font-size:10px;}
+.ca-row.header{background:transparent;border-color:transparent;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:var(--mist);padding-bottom:4px;}
+.ca-name{color:var(--white);font-size:11px;}
+.ca-count{color:var(--s2);text-align:center;}
+.ca-score{text-align:center;padding:3px;border-radius:2px;}
+.pass-score{color:var(--green2);background:rgba(80,200,136,.08);}
+.warn-score{color:var(--amber2);background:rgba(200,176,64,.08);}
+.fail-score{color:var(--red2);background:rgba(160,48,80,.08);}
+.ca-rate{text-align:right;}
+.rate-pass{color:var(--green2);}
+.rate-warn{color:var(--amber2);}
+.rate-fail{color:var(--red2);}
+
+/* TESTER LIST */
+.tester-list{display:flex;flex-direction:column;gap:3px;}
+.tester-row{display:grid;grid-template-columns:240px 80px 80px 1fr;gap:8px;align-items:center;padding:10px 14px;background:var(--panel);border-radius:3px;border:1px solid var(--border);font-size:10px;}
+.tester-row.header{background:transparent;border-color:transparent;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:var(--mist);padding-bottom:4px;}
+.t-email{font-size:11px;color:var(--white);}
+.t-count{text-align:center;}
+.t-code{color:var(--v4);font-size:9px;}
+.t-date{color:var(--mist2);font-size:9px;}
+
+/* SUBMISSIONS TABLE */
+.sub-table{width:100%;border-collapse:collapse;font-size:10px;}
+.sub-table th{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--mist);padding:8px 10px;border-bottom:1px solid var(--border);text-align:left;background:var(--panel2);}
+.sub-table td{padding:9px 10px;border-bottom:1px solid rgba(30,24,56,.4);vertical-align:middle;}
+.sub-table tr:hover td{background:rgba(255,255,255,.013);}
+.pass-chip{font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;padding:2px 7px;border-radius:2px;}
+.chip-pass{color:var(--green2);background:rgba(80,200,136,.1);border:1px solid rgba(80,200,136,.2);}
+.chip-fail{color:var(--red2);background:rgba(160,48,80,.08);border:1px solid rgba(160,48,80,.2);}
+.chip-part{color:var(--amber2);background:rgba(200,176,64,.08);border:1px solid rgba(200,176,64,.2);}
+
+/* TOOLBAR */
+.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.tb-search{background:var(--panel);border:1px solid var(--border2);border-radius:3px;padding:7px 12px;color:var(--white);font-family:'Space Mono',monospace;font-size:10px;outline:none;flex:1;min-width:200px;}
+.tb-search::placeholder{color:var(--mist);}
+.tb-search:focus{border-color:var(--v2);}
+.tb-btn{font-size:8px;letter-spacing:.15em;text-transform:uppercase;padding:6px 12px;border-radius:2px;cursor:pointer;background:transparent;transition:all .15s;}
+.tb-btn.export{border:1px solid rgba(80,200,136,.3);color:var(--green2);}
+.tb-btn.export:hover{background:rgba(80,200,136,.08);}
+.tb-btn.refresh{border:1px solid var(--border2);color:var(--mist2);}
+.tb-btn.refresh:hover{border-color:var(--mist);color:var(--s2);}
+
+/* AUTH GATE */
+.auth-gate{position:fixed;inset:0;z-index:200;background:rgba(4,3,6,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+.ag-text{font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:var(--s2);}
+.ag-input{background:var(--panel);border:1px solid var(--border2);border-radius:3px;padding:10px 14px;color:var(--white);font-family:'Space Mono',monospace;font-size:11px;outline:none;width:280px;}
+.ag-btn{font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:10px 20px;border-radius:3px;cursor:pointer;background:transparent;border:1px solid rgba(128,80,200,.4);color:var(--v4);}
+</style>
+</head>
+<body>
+
+<div class="auth-gate" id="authGate">
+  <div class="ag-text">Admin access required</div>
+  <input class="ag-input" type="email" id="adminEmail" placeholder="Admin email" autocomplete="email">
+  <input class="ag-input" type="password" id="adminPass" placeholder="Password" style="margin-top:6px;">
+  <button class="ag-btn" onclick="adminLogin()">Enter →</button>
+  <div style="font-size:9px;color:var(--mist);letter-spacing:.12em;" id="loginErr"></div>
+</div>
+
+<nav class="nav">
+  <div class="nav-title">BF Admin · Beta Analytics</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="nav-email" id="navEmail"></span>
+    <button class="nav-out" onclick="signOut()">Sign out</button>
+  </div>
+</nav>
+
+<div class="main">
+
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card"><div class="sc-val violet" id="st-total">—</div><div class="sc-label">Total Sessions</div><div class="sc-sub" id="st-target">Target: 30</div></div>
+    <div class="stat-card"><div class="sc-val green" id="st-pass">—</div><div class="sc-label">Pass Rate</div><div class="sc-sub">Target: 70%</div></div>
+    <div class="stat-card"><div class="sc-val" id="st-testers">—</div><div class="sc-label">Active Testers</div></div>
+    <div class="stat-card"><div class="sc-val amber" id="st-codes">—</div><div class="sc-label">Vault Codes Issued</div></div>
+    <div class="stat-card"><div class="sc-val" id="st-near">—</div><div class="sc-label">Near Code (2 sessions)</div><div class="sc-sub">1 session away</div></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Card Analytics — Average Scores</div>
+    <div class="card-analytics-grid" id="cardAnalytics">
+      <div class="ca-row header">
+        <span>Card</span><span style="text-align:center;">Tests</span>
+        <span style="text-align:center;">C</span><span style="text-align:center;">S</span>
+        <span style="text-align:center;">A</span><span style="text-align:center;">L</span>
+        <span style="text-align:center;">P</span><span style="text-align:center;">D</span>
+        <span>Pass Rate</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Testers</div>
+    <div class="tester-list" id="testerList">
+      <div class="tester-row header"><span>Email</span><span style="text-align:center;">Sessions</span><span>Code</span><span>Joined</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">All Submissions</div>
+    <div class="toolbar">
+      <input class="tb-search" type="text" id="subSearch" placeholder="Search card, email, confusion…" oninput="filterSubs()">
+      <button class="tb-btn refresh" onclick="loadData()">Refresh</button>
+      <button class="tb-btn export" onclick="exportCSV()">Export CSV</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="sub-table">
+        <thead><tr>
+          <th>Date</th><th>Tester</th><th>Card</th><th>Scenario</th>
+          <th>C</th><th>S</th><th>A</th><th>L</th><th>P</th><th>D</th>
+          <th>Status</th><th>Confusion</th>
+        </tr></thead>
+        <tbody id="subTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://ijrbayhwdjazqldgmxsz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_5-r_W1di6PgFTrdgaKVL0g_toRrYW-F';
+// ADMIN_EMAILS: comma-separated list of admin email addresses
+const ADMIN_EMAILS = ['admin@yourdomain.com'];
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let allSessions = [], allTesters = [];
+
+async function adminLogin() {
+  const email = document.getElementById('adminEmail').value;
+  const pass  = document.getElementById('adminPass').value;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { document.getElementById('loginErr').textContent = error.message; return; }
+  if (!ADMIN_EMAILS.includes(data.user.email)) {
+    await sb.auth.signOut();
+    document.getElementById('loginErr').textContent = 'Not an admin account.';
+    return;
+  }
+  document.getElementById('authGate').style.display = 'none';
+  document.getElementById('navEmail').textContent = data.user.email;
+  await loadData();
+}
+
+async function loadData() {
+  // Admin bypass RLS: use service role key in production for full access
+  // For now: query with anon key (requires permissive RLS or admin policy)
+  const [{ data: sessions }, { data: testers }, { data: codes }] = await Promise.all([
+    sb.from('beta_sessions').select('*').order('created_at', { ascending: false }),
+    sb.from('beta_testers').select('*').order('created_at', { ascending: false }),
+    sb.from('vault_codes').select('*').eq('status', 'ISSUED'),
+  ]);
+
+  allSessions = sessions || [];
+  allTesters  = testers  || [];
+  const issuedCodes = codes?.length || 0;
+
+  renderStats(issuedCodes);
+  renderCardAnalytics();
+  renderTesters();
+  renderSubmissions(allSessions);
+}
+
+function renderStats(codesIssued) {
+  const total = allSessions.length;
+  const passed = allSessions.filter(s => s.passed).length;
+  const rate = total > 0 ? Math.round(passed / total * 100) : 0;
+  const near = allTesters.filter(t => t.session_count === 2).length;
+  const targetPct = Math.round(total / 30 * 100);
+
+  document.getElementById('st-total').textContent = total;
+  document.getElementById('st-target').textContent = `${targetPct}% of 30 target`;
+  document.getElementById('st-pass').textContent = rate + '%';
+  document.getElementById('st-testers').textContent = allTesters.length;
+  document.getElementById('st-codes').textContent = codesIssued;
+  document.getElementById('st-near').textContent = near;
+}
+
+function renderCardAnalytics() {
+  const cards = {};
+  const KEYS = ['score_clarity','score_safety','score_action','score_load','score_portability','score_done_state'];
+
+  allSessions.forEach(s => {
+    if (!cards[s.card]) cards[s.card] = { sessions:[], passed:0 };
+    cards[s.card].sessions.push(s);
+    if (s.passed) cards[s.card].passed++;
+  });
+
+  const grid = document.getElementById('cardAnalytics');
+  const header = grid.querySelector('.header');
+  grid.innerHTML = '';
+  grid.appendChild(header);
+
+  Object.entries(cards).sort((a,b) => b[1].sessions.length - a[1].sessions.length).forEach(([card, data]) => {
+    const n = data.sessions.length;
+    const avgs = KEYS.map(k => {
+      const vals = data.sessions.map(s => s[k]).filter(v => v != null);
+      return vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : '—';
+    });
+    const rate = n > 0 ? Math.round(data.passed/n*100) : 0;
+    const rateClass = rate >= 70 ? 'rate-pass' : rate >= 50 ? 'rate-warn' : 'rate-fail';
+    const scoreClasses = avgs.map((v,i) => {
+      if (v === '—') return '';
+      const fv = parseFloat(v);
+      const targets = [4,4,4,3,4,4];
+      const ops = ['>=','>=','>=','<=','>=','>='];
+      const ok = ops[i] === '>=' ? fv >= targets[i] : fv <= targets[i];
+      return ok ? 'pass-score' : fv >= targets[i]-1 ? 'warn-score' : 'fail-score';
+    });
+
+    grid.innerHTML += `<div class="ca-row">
+      <span class="ca-name">${card}</span>
+      <span class="ca-count">${n}</span>
+      ${avgs.map((v,i)=>`<span class="ca-score ${scoreClasses[i]}">${v}</span>`).join('')}
+      <span class="ca-rate ${rateClass}">${rate}%</span>
+    </div>`;
+  });
+}
+
+function renderTesters() {
+  const list = document.getElementById('testerList');
+  const header = list.querySelector('.header');
+  list.innerHTML = '';
+  list.appendChild(header);
+  allTesters.forEach(t => {
+    list.innerHTML += `<div class="tester-row">
+      <span class="t-email">${t.email}</span>
+      <span class="t-count" style="text-align:center;">${t.session_count}</span>
+      <span class="t-code">${t.vault_code || '—'}</span>
+      <span class="t-date">${t.created_at?.slice(0,10) || '—'}</span>
+    </div>`;
+  });
+}
+
+function renderSubmissions(sessions) {
+  const tbody = document.getElementById('subTable');
+  tbody.innerHTML = sessions.map(s => {
+    const date = s.created_at?.slice(0,10) || '—';
+    const status = s.passed === true ? 'pass' : s.passed === false ? 'fail' : 'part';
+    const label = { pass:'PASS', fail:'FAIL', part:'PARTIAL' }[status];
+    return `<tr>
+      <td>${date}</td>
+      <td style="color:var(--s2);font-size:9px;">${s.tester_email.split('@')[0]}</td>
+      <td style="color:var(--white);">${s.card}</td>
+      <td style="color:var(--mist2);">${s.scenario||'—'}</td>
+      <td>${s.score_clarity||'—'}</td><td>${s.score_safety||'—'}</td>
+      <td>${s.score_action||'—'}</td><td>${s.score_load||'—'}</td>
+      <td>${s.score_portability||'—'}</td><td>${s.score_done_state||'—'}</td>
+      <td><span class="pass-chip chip-${status}">${label}</span></td>
+      <td style="color:var(--mist2);font-size:9px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.confusion||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterSubs() {
+  const q = document.getElementById('subSearch').value.toLowerCase();
+  const filtered = q ? allSessions.filter(s =>
+    s.card?.toLowerCase().includes(q) ||
+    s.tester_email?.toLowerCase().includes(q) ||
+    s.confusion?.toLowerCase().includes(q)
+  ) : allSessions;
+  renderSubmissions(filtered);
+}
+
+function exportCSV() {
+  const headers = ['date','tester','card','card_version','scenario','completed','fact','move','clarity','safety','action','load','portability','done_state','passed','confusion','easier','heavier'];
+  const rows = allSessions.map(s => [
+    s.created_at?.slice(0,10), s.tester_email, s.card, s.card_version,
+    s.scenario, s.completed, (s.fact||'').replace(/,/g,' '), (s.move_chosen||'').replace(/,/g,' '),
+    s.score_clarity, s.score_safety, s.score_action, s.score_load, s.score_portability, s.score_done_state,
+    s.passed, (s.confusion||'').replace(/,/g,' '), (s.easier||'').replace(/,/g,' '), (s.heavier||'').replace(/,/g,' ')
+  ]);
+  const csv = [headers, ...rows].map(r=>r.join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `BF_BetaData_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+async function signOut() { await sb.auth.signOut(); location.reload(); }
+
+// Check if already signed in as admin
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user && ADMIN_EMAILS.includes(session.user.email)) {
+    document.getElementById('authGate').style.display = 'none';
+    document.getElementById('navEmail').textContent = session.user.email;
+    await loadData();
+  }
+})();
+</script>
+</body>
+</html>

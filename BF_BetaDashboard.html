@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Black Fairy — My Beta Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&family=IM+Fell+English:ital@1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --void:#040306;--panel:#0f0c1a;--panel2:#150f22;
+  --v2:#5020a0;--v3:#8050c8;--v4:#b080e8;--v5:#d8b8ff;
+  --s1:#c9c4cf;--s2:#8888a0;--mist:#3c3458;--mist2:#524a70;
+  --white:#ece8f8;--border:#1e1838;--border2:#261e3e;
+  --green:#3a9870;--green2:#50c888;--amber:#c09040;--amber2:#e0b840;
+  --red:#a03050;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--void);color:var(--white);font-family:'Cormorant Garamond',serif;font-size:15px;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 60% 35% at 50% 0%,rgba(80,32,160,.15) 0%,transparent 60%);}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:rgba(4,3,6,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);height:50px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;}
+.nav-brand{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--s2);text-transform:uppercase;}
+.nav-email{font-family:'Space Mono',monospace;font-size:8px;color:var(--mist2);}
+.nav-out{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.15em;color:var(--mist);cursor:pointer;background:transparent;border:none;padding:4px 8px;transition:color .2s;}
+.nav-out:hover{color:var(--s2);}
+
+/* MAIN */
+.main{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:40px 24px 80px;}
+
+/* PROGRESS SECTION */
+.progress-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden;}
+.pc-glow{position:absolute;inset:0;opacity:0;transition:opacity .5s;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(80,32,160,.15),transparent);}
+.progress-card.complete .pc-glow{opacity:1;}
+.pc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.pc-tag{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.3em;color:var(--mist2);text-transform:uppercase;}
+.pc-count{font-family:'Space Mono',monospace;font-size:24px;color:var(--v4);line-height:1;}
+.pc-count span{font-size:13px;color:var(--mist2);}
+
+.progress-bar-wrap{margin-bottom:16px;}
+.pb-track{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.pb-fill{height:100%;background:linear-gradient(90deg,var(--v2),var(--v4));border-radius:2px;transition:width .8s cubic-bezier(.22,1,.36,1);}
+.pb-labels{display:flex;justify-content:space-between;margin-top:6px;}
+.pb-label{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.12em;color:var(--mist);}
+.pb-label.active{color:var(--v4);}
+
+/* VAULT CODE REVEAL */
+.vault-code-box{background:rgba(80,32,160,.12);border:1px solid rgba(128,80,200,.35);border-radius:4px;padding:18px 20px;text-align:center;display:none;}
+.progress-card.complete .vault-code-box{display:block;animation:revealCode .6s ease .3s both;}
+@keyframes revealCode{from{opacity:0;transform:scale(.96);}to{opacity:1;transform:scale(1);}}
+.vc-label{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.3em;color:var(--mist2);text-transform:uppercase;display:block;margin-bottom:8px;}
+.vc-code{font-family:'Space Mono',monospace;font-size:clamp(14px,3vw,20px);color:var(--v5);letter-spacing:.12em;margin-bottom:10px;}
+.vc-copy{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;padding:7px 14px;border-radius:2px;cursor:pointer;background:transparent;border:1px solid rgba(128,80,200,.4);color:var(--v4);transition:all .2s;}
+.vc-copy:hover{background:var(--v2);color:var(--white);}
+.vc-desc{font-size:12px;font-style:italic;color:var(--s2);margin-top:8px;}
+
+/* SESSIONS LIST */
+.sessions-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.sh-title{font-size:18px;font-weight:300;letter-spacing:.07em;}
+.sh-new{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;padding:6px 14px;border-radius:2px;background:transparent;border:1px solid rgba(128,80,200,.4);color:var(--v4);text-decoration:none;transition:all .2s;}
+.sh-new:hover{background:var(--v2);color:var(--white);}
+
+.session-list{display:flex;flex-direction:column;gap:8px;}
+.session-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:border-color .15s;}
+.session-card:hover{border-color:var(--border2);}
+.session-card.open{border-color:rgba(128,80,200,.3);}
+.sc-header{padding:14px 18px;display:flex;align-items:center;gap:12px;}
+.sc-status{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sc-pass{background:var(--green2);}
+.sc-fail{background:var(--red);}
+.sc-partial{background:var(--amber2);}
+.sc-body{flex:1;}
+.sc-card{font-size:15px;color:var(--white);letter-spacing:.03em;}
+.sc-meta{font-family:'Space Mono',monospace;font-size:8px;color:var(--mist2);margin-top:2px;letter-spacing:.08em;}
+.sc-scores{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end;}
+.sc-score{font-family:'Space Mono',monospace;font-size:9px;padding:2px 6px;border-radius:2px;}
+.ss-pass{color:var(--green2);background:rgba(80,200,136,.08);}
+.ss-fail{color:var(--red);background:rgba(160,48,80,.08);}
+.sc-detail{display:none;padding:0 18px 14px;border-top:1px solid var(--border);}
+.session-card.open .sc-detail{display:block;}
+.sd-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+.sd-field{background:rgba(0,0,0,.2);border-radius:3px;padding:8px 10px;}
+.sdf-label{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.2em;color:var(--mist2);text-transform:uppercase;display:block;margin-bottom:3px;}
+.sdf-val{font-size:12.5px;color:var(--s2);line-height:1.5;}
+.score-row{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:10px;}
+.score-box{background:rgba(0,0,0,.25);border-radius:3px;padding:8px 6px;text-align:center;}
+.sb-label{font-family:'Space Mono',monospace;font-size:6.5px;color:var(--mist);display:block;margin-bottom:4px;letter-spacing:.08em;}
+.sb-val{font-size:17px;font-weight:300;}
+.sb-pass{color:var(--green2);}
+.sb-fail{color:var(--red);}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:48px 24px;}
+.empty-phrase{font-family:'IM Fell English',serif;font-style:italic;font-size:22px;color:var(--v4);margin-bottom:10px;}
+.empty-sub{font-size:13px;font-style:italic;color:var(--mist2);margin-bottom:24px;line-height:1.6;}
+.empty-btn{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding:11px 20px;border-radius:3px;border:1px solid rgba(128,80,200,.4);color:var(--v4);text-decoration:none;display:inline-block;transition:all .2s;}
+.empty-btn:hover{background:var(--v2);color:var(--white);}
+
+/* AUTH GATE */
+.auth-gate{position:fixed;inset:0;z-index:200;background:rgba(4,3,6,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;}
+.ag-text{font-size:16px;font-style:italic;color:var(--s2);text-align:center;}
+.ag-btn{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding:11px 20px;border-radius:3px;border:1px solid rgba(128,80,200,.4);color:var(--v4);text-decoration:none;display:inline-block;transition:all .2s;}
+.ag-btn:hover{background:var(--v2);color:var(--white);}
+</style>
+</head>
+<body>
+
+<div class="auth-gate" id="authGate">
+  <p class="ag-text">You need a tester account to view your dashboard.</p>
+  <a class="ag-btn" href="/beta-account">Sign in →</a>
+</div>
+
+<nav class="nav">
+  <span class="nav-brand">★ Beta Dashboard</span>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="nav-email" id="navEmail"></span>
+    <button class="nav-out" onclick="signOut()">Sign out</button>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- PROGRESS -->
+  <div class="progress-card" id="progressCard">
+    <div class="pc-glow"></div>
+    <div class="pc-top">
+      <div>
+        <div class="pc-tag">Sessions completed</div>
+        <div class="pc-count"><span id="sessionCount">0</span><span> / 3</span></div>
+      </div>
+      <div style="text-align:right;">
+        <div class="pc-tag" style="margin-bottom:4px;">Status</div>
+        <div style="font-size:13px;font-style:italic;color:var(--s2);" id="progressStatus">Keep going.</div>
+      </div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="pb-track"><div class="pb-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="pb-labels">
+        <span class="pb-label">0</span>
+        <span class="pb-label" id="lbl1">1</span>
+        <span class="pb-label" id="lbl2">2</span>
+        <span class="pb-label active">3 → Vault</span>
+      </div>
+    </div>
+    <div class="vault-code-box" id="vaultCodeBox">
+      <span class="vc-label">Your vault invite code</span>
+      <div class="vc-code" id="vaultCode">—</div>
+      <button class="vc-copy" onclick="copyCode()">Copy code</button>
+      <div class="vc-desc">Enter at ellari-vault.com to unlock vault member access.</div>
+    </div>
+  </div>
+
+  <!-- SESSIONS -->
+  <div class="sessions-header">
+    <div class="sh-title">My Sessions</div>
+    <a class="sh-new" href="/beta-submit">+ Submit New Session</a>
+  </div>
+  <div class="session-list" id="sessionList">
+    <div class="empty" id="emptyState">
+      <div class="empty-phrase">"El ter sel is."</div>
+      <p class="empty-sub">No sessions yet. Select a card, run a 20-minute session, and submit your scores.</p>
+      <a class="empty-btn" href="/beta-cards">View card deck →</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://ijrbayhwdjazqldgmxsz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_5-r_W1di6PgFTrdgaKVL0g_toRrYW-F';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let user = null;
+let selectedSession = null;
+
+const SCORE_LABELS = ['Clarity','Safety','Action','Load','Port.','Done'];
+const SCORE_KEYS = ['score_clarity','score_safety','score_action','score_load','score_portability','score_done_state'];
+const SCORE_PASS = [4,4,4,3,4,4];
+const SCORE_OP = ['>=','>=','>=','<=','>=','>='];
+
+function passScore(key, val) {
+  const idx = SCORE_KEYS.indexOf(key);
+  if (idx < 0) return true;
+  return SCORE_OP[idx] === '>=' ? val >= SCORE_PASS[idx] : val <= SCORE_PASS[idx];
+}
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session?.user) { document.getElementById('authGate').style.display='flex'; return; }
+  document.getElementById('authGate').style.display = 'none';
+  user = session.user;
+  document.getElementById('navEmail').textContent = user.email;
+  await loadData();
+}
+
+async function loadData() {
+  const [{ data: tester }, { data: sessions }] = await Promise.all([
+    sb.from('beta_testers').select('*').eq('email', user.email).single(),
+    sb.from('beta_sessions').select('*').eq('tester_email', user.email).order('created_at', { ascending: false })
+  ]);
+
+  updateProgress(tester?.session_count || 0, tester?.vault_code);
+  renderSessions(sessions || []);
+}
+
+function updateProgress(count, code) {
+  document.getElementById('sessionCount').textContent = count;
+  const pct = Math.min(count / 3 * 100, 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  const card = document.getElementById('progressCard');
+  const status = document.getElementById('progressStatus');
+  if (count === 0) status.textContent = 'Submit your first session.';
+  else if (count === 1) { status.textContent = 'One done. Two more.'; document.getElementById('lbl1').className = 'pb-label active'; }
+  else if (count === 2) { status.textContent = 'Two done. One more.'; document.getElementById('lbl2').className = 'pb-label active'; }
+  else if (count >= 3) {
+    status.textContent = 'Three complete. Vault unlocked.';
+    card.classList.add('complete');
+    document.getElementById('vaultCode').textContent = code || '—';
+    document.getElementById('vaultCodeBox').style.display = 'block';
+  }
+}
+
+function renderSessions(sessions) {
+  const list = document.getElementById('sessionList');
+  if (!sessions.length) { document.getElementById('emptyState').style.display = 'block'; return; }
+  document.getElementById('emptyState').style.display = 'none';
+
+  list.innerHTML = sessions.map((s, i) => {
+    const passed = s.passed;
+    const date = new Date(s.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    const scores = SCORE_KEYS.map((k, j) => {
+      const v = s[k] || 0;
+      const ok = passScore(k, v);
+      return `<span class="sc-score ${ok?'ss-pass':'ss-fail'}">${SCORE_LABELS[j]}:${v}</span>`;
+    }).join('');
+
+    return `<div class="session-card${selectedSession===i?' open':''}" id="sc${i}" onclick="toggleSession(${i})">
+      <div class="sc-header">
+        <div class="sc-status ${passed===true?'sc-pass':passed===false?'sc-fail':'sc-partial'}"></div>
+        <div class="sc-body">
+          <div class="sc-card">${s.card}</div>
+          <div class="sc-meta">${date} · ${s.card_version} · ${s.completed||'—'}</div>
+        </div>
+        <div class="sc-scores">${scores}</div>
+      </div>
+      <div class="sc-detail">
+        <div class="score-row">
+          ${SCORE_KEYS.map((k,j)=>{
+            const v = s[k]||0; const ok = passScore(k,v);
+            return `<div class="score-box"><span class="sb-label">${SCORE_LABELS[j]}</span><div class="sb-val ${ok?'sb-pass':'sb-fail'}">${v}</div></div>`;
+          }).join('')}
+        </div>
+        <div class="sd-grid">
+          ${s.fact?`<div class="sd-field"><span class="sdf-label">Observable Fact</span><div class="sdf-val">${s.fact}</div></div>`:''}
+          ${s.move_chosen?`<div class="sd-field"><span class="sdf-label">Move Chosen</span><div class="sdf-val">${s.move_chosen}</div></div>`:''}
+          ${s.confusion?`<div class="sd-field"><span class="sdf-label">Confusion</span><div class="sdf-val">${s.confusion}</div></div>`:''}
+          ${s.easier?`<div class="sd-field"><span class="sdf-label">Made Easier</span><div class="sdf-val">${s.easier}</div></div>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSession(i) {
+  selectedSession = selectedSession === i ? null : i;
+  document.querySelectorAll('.session-card').forEach((el, j) => {
+    el.classList.toggle('open', j === selectedSession);
+  });
+}
+
+function copyCode() {
+  const code = document.getElementById('vaultCode').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.querySelector('.vc-copy');
+    btn.textContent = 'Copied ✓';
+    btn.style.color = 'var(--green2)';
+    setTimeout(() => { btn.textContent = 'Copy code'; btn.style.color = ''; }, 2000);
+  });
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  window.location.href = '/beta-account';
+}
+
+init();
+</script>
+</body>
+</html>

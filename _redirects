@@ -7,3 +7,6 @@
 /onboarding    /ellari-vault-onboarding.html       200
 /diagnostic    /BF_Diagnostic.html       200
 /catalog       /BF_ProductCatalog.html   200
+/beta-account    /BF_BetaAuth.html          200
+/beta-dashboard  /BF_BetaDashboard.html     200
+/beta-admin      /BF_AdminDashboard.html    200

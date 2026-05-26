@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Black Fairy — Beta Tester Account</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Space+Mono:wght@400;700&family=IM+Fell+English:ital@1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --void:#040306;--panel:#0f0c1a;--panel2:#150f22;
+  --v2:#5020a0;--v3:#8050c8;--v4:#b080e8;--v5:#d8b8ff;
+  --s1:#c9c4cf;--s2:#8888a0;--mist:#3c3458;--mist2:#524a70;
+  --white:#ece8f8;--border:#1e1838;--border2:#261e3e;
+  --green:#3a9870;--green2:#50c888;--red:#a03050;--red2:#c04060;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;background:var(--void);color:var(--white);font-family:'Cormorant Garamond',serif;overflow:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 40% at 50% 30%,rgba(80,32,160,.2) 0%,transparent 65%);}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:160px;}
+
+.stage{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+
+/* SIGIL */
+.sigil{width:56px;height:56px;margin-bottom:28px;animation:sigilIn 1.4s ease both;}
+@keyframes sigilIn{from{opacity:0;transform:scale(.8);}to{opacity:.6;transform:scale(1);}}
+.sigil svg{width:100%;height:100%;}
+
+.kicker{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.45em;color:var(--mist2);text-transform:uppercase;margin-bottom:12px;display:block;text-align:center;animation:fadeUp .8s ease .2s both;}
+.title{font-size:clamp(22px,4vw,32px);font-weight:300;letter-spacing:.1em;text-align:center;margin-bottom:6px;animation:fadeUp .8s ease .3s both;}
+.title em{color:var(--v4);font-style:normal;}
+.subtitle{font-size:13px;font-style:italic;color:var(--s2);text-align:center;max-width:340px;line-height:1.6;margin-bottom:32px;animation:fadeUp .8s ease .4s both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* CARD */
+.auth-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:28px;width:100%;max-width:380px;animation:fadeUp .8s ease .5s both;}
+.card-top{height:2px;background:linear-gradient(90deg,var(--v2),var(--v3),transparent);margin:-28px -28px 24px;border-radius:6px 6px 0 0;}
+
+.step{display:none;}
+.step.active{display:block;}
+
+.field-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.25em;color:var(--mist2);text-transform:uppercase;display:block;margin-bottom:6px;}
+.field-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);padding:9px 0;color:var(--white);font-family:'Cormorant Garamond',serif;font-size:15px;outline:none;caret-color:var(--v4);}
+.field-input::placeholder{color:var(--mist);}
+.field-input:focus{border-bottom-color:var(--v3);}
+.field-sub{font-size:11px;font-style:italic;color:var(--mist);margin-top:5px;line-height:1.5;}
+
+.auth-btn{margin-top:18px;width:100%;background:transparent;border:1px solid var(--v2);color:var(--v4);font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;text-transform:uppercase;padding:12px;border-radius:3px;cursor:pointer;transition:all .2s;}
+.auth-btn:hover:not(:disabled){background:var(--v2);color:var(--white);}
+.auth-btn:disabled{opacity:.5;cursor:default;}
+
+.notice{margin-top:10px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.12em;color:var(--mist);text-align:center;}
+.notice.error{color:var(--red2);}
+.notice.success{color:var(--green2);}
+
+/* SENT STATE */
+.sent-phrase{font-family:'IM Fell English',serif;font-style:italic;font-size:20px;color:var(--v4);text-align:center;margin-bottom:10px;}
+.sent-sub{font-size:13px;font-style:italic;color:var(--s2);text-align:center;line-height:1.65;margin-bottom:20px;}
+.sent-email{font-family:'Space Mono',monospace;font-size:10px;color:var(--v5);text-align:center;padding:8px 14px;border:1px solid var(--border2);border-radius:3px;display:inline-block;}
+
+/* ALREADY SIGNED IN */
+.signed-in{text-align:center;}
+.si-email{font-family:'Space Mono',monospace;font-size:10px;color:var(--green2);margin-bottom:16px;}
+.si-btns{display:flex;flex-direction:column;gap:8px;}
+.si-btn{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding:11px;border-radius:3px;cursor:pointer;background:transparent;text-decoration:none;text-align:center;transition:all .2s;}
+.si-btn.primary{border:1px solid var(--v2);color:var(--v4);}
+.si-btn.primary:hover{background:var(--v2);color:var(--white);}
+.si-btn.ghost{border:1px solid var(--border);color:var(--mist);}
+.si-btn.ghost:hover{border-color:var(--mist2);}
+
+.back-link{margin-top:20px;text-align:center;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;color:var(--mist);text-transform:uppercase;}
+.back-link a{color:inherit;text-decoration:none;}
+.back-link a:hover{color:var(--s2);}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <!-- Sigil -->
+  <div class="sigil">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#9060c8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="100" cy="112" r="72"/><circle cx="100" cy="112" r="46"/><circle cx="100" cy="112" r="22"/>
+        <path d="M100 28 L114 52 L86 52 Z"/><line x1="100" y1="52" x2="100" y2="90"/>
+      </g>
+    </svg>
+  </div>
+
+  <span class="kicker">Black Fairy · Beta Tester Account</span>
+  <h1 class="title">Enter your <em>signal.</em></h1>
+  <p class="subtitle">One email. A magic link arrives. Your sessions are saved across devices.</p>
+
+  <div class="auth-card">
+    <div class="card-top"></div>
+
+    <!-- STEP: CHECK AUTH STATE -->
+    <div class="step" id="stepLoading">
+      <div style="text-align:center;padding:20px 0;font-size:13px;font-style:italic;color:var(--mist);">Checking authentication…</div>
+    </div>
+
+    <!-- STEP: ALREADY SIGNED IN -->
+    <div class="step" id="stepSignedIn">
+      <div class="signed-in">
+        <div style="font-size:13px;font-style:italic;color:var(--s2);margin-bottom:8px;">Signed in as</div>
+        <div class="si-email" id="siEmail"></div>
+        <div class="si-btns">
+          <a class="si-btn primary" href="/beta-dashboard">My Dashboard →</a>
+          <a class="si-btn primary" href="/beta-submit">Submit a Session →</a>
+          <button class="si-btn ghost" onclick="signOut()">Sign out</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP: EMAIL INPUT -->
+    <div class="step active" id="stepEmail">
+      <label class="field-label">Your email</label>
+      <input class="field-input" type="email" id="emailInput" placeholder="your@email.com" autocomplete="email">
+      <div class="field-sub">A magic link arrives in your inbox. No password needed.</div>
+      <button class="auth-btn" id="sendBtn" onclick="sendMagicLink()">Send magic link →</button>
+      <div class="notice" id="emailNotice"></div>
+    </div>
+
+    <!-- STEP: LINK SENT -->
+    <div class="step" id="stepSent">
+      <div class="sent-phrase">"Zakhor."</div>
+      <p class="sent-sub">Your link is on the way. Check your inbox — it expires in 60 minutes.</p>
+      <div class="sent-email" id="sentEmail"></div>
+      <div class="notice" style="margin-top:14px;">No email? Check spam or <button style="background:none;border:none;color:var(--v4);cursor:pointer;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.12em;" onclick="showStep('stepEmail')">try again</button></div>
+    </div>
+  </div>
+
+  <div class="back-link"><a href="/">← Vault</a> · <a href="/beta-guide">Beta Guide</a></div>
+</div>
+
+<script>
+// ── CONFIG — replace with your Supabase project values ───────────────────
+const SUPABASE_URL  = 'https://ijrbayhwdjazqldgmxsz.supabase.co';
+const SUPABASE_KEY  = 'sb_publishable_5-r_W1di6PgFTrdgaKVL0g_toRrYW-F';
+// ─────────────────────────────────────────────────────────────────────────
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function showStep(id) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+async function init() {
+  showStep('stepLoading');
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    document.getElementById('siEmail').textContent = session.user.email;
+    showStep('stepSignedIn');
+  } else {
+    showStep('stepEmail');
+  }
+
+  // Handle magic link return
+  const hash = window.location.hash;
+  if (hash.includes('access_token')) {
+    const { data: { session: s } } = await sb.auth.getSession();
+    if (s?.user) {
+      // Ensure tester record exists
+      await sb.from('beta_testers').upsert({ email: s.user.email }, { onConflict: 'email', ignoreDuplicates: true });
+      window.location.href = '/beta-dashboard';
+    }
+  }
+}
+
+async function sendMagicLink() {
+  const email = document.getElementById('emailInput').value.trim();
+  const note = document.getElementById('emailNotice');
+  if (!email || !email.includes('@')) {
+    note.textContent = 'Valid email required.'; note.className = 'notice error'; return;
+  }
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  note.textContent = ''; note.className = 'notice';
+
+  const { error } = await sb.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: window.location.origin + '/beta-account' }
+  });
+
+  if (error) {
+    note.textContent = error.message; note.className = 'notice error';
+    btn.disabled = false; btn.textContent = 'Send magic link →';
+  } else {
+    document.getElementById('sentEmail').textContent = email;
+    showStep('stepSent');
+  }
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  showStep('stepEmail');
+}
+
+init();
+</script>
+</body>
+</html>
